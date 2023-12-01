@@ -1,0 +1,22 @@
+{
+  "name": "ns-query",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/ecency/ns-query",
+  "author": "ildar.timerbaev <dkildar@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.1",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^4.29.7",
+    "@types/react": "^18.2.39",
+    "date-fns": "^2.30.0",
+    "nostr-tools": "^1.17.0",
+    "react": "^18.2.0",
+    "react-use": "^17.4.1"
+  }
+}
