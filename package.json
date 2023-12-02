@@ -13,27 +13,32 @@
   "devDependencies": {
     "@types/node": "^12.6.6",
     "@types/react": "^16.8.23",
+    "@vitejs/plugin-react": "^4.2.0",
     "eslint": "^8.54.0",
     "husky": "^8.0.1",
     "prettier": "^3.1.0",
     "rimraf": "^5.0.5",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "vite": "^5.0.4",
+    "vite-plugin-dts": "^3.6.4"
   },
   "peerDependencies": {
-    "react": "^16.8.6",
     "@tanstack/react-query": "^4.29.7",
     "date-fns": "^2.30.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "react-use": "^17.4.1"
   },
   "dependencies": {
-    "react": "^16.8.6",
     "@tanstack/react-query": "^4.29.7",
     "date-fns": "^2.30.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "react-use": "^17.4.1",
-    "nostr-tools": "^1.17.0"
+    "vicev-nostr-tools": "^1.17.0"
   },
   "scripts": {
-    "build": "rimraf dist & tsc",
+    "build": "rimraf dist & tsc & vite build",
     "format": "eslint --fix"
   },
   "lint-staged": {

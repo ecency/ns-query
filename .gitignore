@@ -15,7 +15,7 @@ public/static
 .env.test.local
 .env.production.local
 
-src/config.ts
+lib/config.ts
 .vscode
 
 dev.sh

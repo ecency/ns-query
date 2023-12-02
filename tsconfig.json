@@ -1,4 +1,5 @@
 {
+  "include": ["lib"],
   "compilerOptions": {
     "allowJs": false,
     "allowUnreachableCode": false,
@@ -9,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "lib": ["esnext", "dom"],
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noImplicitAny": true,
@@ -20,7 +21,7 @@
     "strictNullChecks": true,
     "strict": true,
     "pretty": true,
-    "target": "es2016",
+    "target": "es5",
     "skipLibCheck": true,
     "outDir": "./dist",
     "declaration": true
