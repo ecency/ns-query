@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNoStrAccount, EncryptionTools, uploadChatKeys } from "../utils";
-import { PREFIX } from "../../../util/local-storage";
-import { useMappedStore } from "../../../store/use-mapped-store";
-import { useNostrPublishMutation } from "../nostr";
-import { Kind } from "../../../../lib/nostr-tools/event";
-import { ChatQueries } from "../queries";
+import { createNoStrAccount, EncryptionTools } from "../utils";
+import { NostrContext, useNostrPublishMutation } from "../nostr";
+import { NostrQueries } from "../nostr/queries";
+import { useContext } from "react";
+import { Kind } from "nostr-tools";
+import { UploadKeys, UploadKeysPayload } from "../types";
 
 const crypto = require("crypto");
 
@@ -14,48 +14,66 @@ const crypto = require("crypto");
  * This hook manages the process of joining a chat, resetting chat state, and uploading
  * a public key for secure communication.
  *
+ * @param uploadChatKeys – Special function for uploading generated keys to user
  * @param onSuccess - A callback function to be called upon successful completion of chat join.
  *
  * @returns A function from the `useMutation` hook, which can be used to initiate the chat join process.
  */
-export function useJoinChat(onSuccess?: () => void) {
+export function useJoinChat(
+  uploadChatKeys: UploadKeys,
+  onSuccess?: () => void,
+) {
   const queryClient = useQueryClient();
-  const { activeUser } = useMappedStore();
+  const { activeUsername, activeUserData } = useContext(NostrContext);
 
   const { mutateAsync: uploadKeys } = useMutation(
     ["chats/upload-public-key"],
-    (keys: Parameters<typeof uploadChatKeys>[1]) => uploadChatKeys(activeUser, keys)
+    async (keys: UploadKeysPayload) => uploadChatKeys(activeUserData!!, keys),
   );
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
     Kind.Metadata,
-    () => {}
+    () => {},
   );
 
   return useMutation(
     ["chat-join-chat"],
     async (pin: string) => {
       const keys = createNoStrAccount();
-      localStorage.setItem(PREFIX + "_nostr_pr_" + activeUser?.username, pin);
+      localStorage.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
       const initialVector = crypto.randomBytes(16);
-      const encryptedKey = EncryptionTools.encrypt(keys.priv, pin, initialVector);
-      await uploadKeys({ pub: keys.pub, priv: encryptedKey, iv: initialVector });
+      const encryptedKey = EncryptionTools.encrypt(
+        keys.priv,
+        pin,
+        initialVector,
+      );
+      await uploadKeys({
+        pub: keys.pub,
+        priv: encryptedKey,
+        iv: initialVector,
+      });
 
-      queryClient.setQueryData([ChatQueries.PUBLIC_KEY, activeUser?.username], keys.pub);
-      queryClient.setQueryData([ChatQueries.PRIVATE_KEY, activeUser?.username], keys.priv);
+      queryClient.setQueryData(
+        [NostrQueries.PUBLIC_KEY, activeUsername],
+        keys.pub,
+      );
+      queryClient.setQueryData(
+        [NostrQueries.PRIVATE_KEY, activeUsername],
+        keys.priv,
+      );
 
       await updateProfile({
         tags: [],
         eventMetadata: {
-          name: activeUser?.username!,
+          name: activeUsername!,
           about: "",
-          picture: ""
-        }
+          picture: "",
+        },
       });
     },
     {
-      onSuccess
-    }
+      onSuccess,
+    },
   );
 }

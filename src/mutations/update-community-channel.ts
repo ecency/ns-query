@@ -1,19 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries, useChannelsQuery } from "../queries";
-import { Channel, useNostrPublishMutation } from "../nostr";
-import { Kind } from "../../../../lib/nostr-tools/event";
+import { Channel, NostrContext, useNostrPublishMutation } from "../nostr";
 import { useFindHealthyRelayQuery } from "../nostr/mutations/find-healthy-relay";
-import { useMappedStore } from "../../../store/use-mapped-store";
+import { useContext } from "react";
+import { Kind } from "nostr-tools";
 
 export function useUpdateCommunityChannel(channel?: Channel) {
   const queryClient = useQueryClient();
   const { data: channels } = useChannelsQuery();
-  const { activeUser } = useMappedStore();
+  const { activeUsername } = useContext(NostrContext);
 
   const { mutateAsync: updateChannel } = useNostrPublishMutation(
     ["chats/nostr-update-channel", channel?.communityName],
     Kind.ChannelMetadata,
-    () => {}
+    () => {},
   );
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
@@ -28,7 +28,7 @@ export function useUpdateCommunityChannel(channel?: Channel) {
 
       await updateChannel({
         tags: [["e", channel.id, ...(relay ? [relay] : [])]],
-        eventMetadata: JSON.stringify(newUpdatedChannel)
+        eventMetadata: JSON.stringify(newUpdatedChannel),
       });
 
       return newUpdatedChannel;
@@ -40,11 +40,16 @@ export function useUpdateCommunityChannel(channel?: Channel) {
         }
 
         const tempChannels = [...(channels ?? [])];
-        const index = tempChannels.findIndex((ch) => ch.id === updatedChannel?.id);
+        const index = tempChannels.findIndex(
+          (ch) => ch.id === updatedChannel?.id,
+        );
         tempChannels[index] = updatedChannel;
 
-        queryClient.setQueryData([ChatQueries.CHANNELS, activeUser?.username], tempChannels);
-      }
-    }
+        queryClient.setQueryData(
+          [ChatQueries.CHANNELS, activeUsername],
+          tempChannels,
+        );
+      },
+    },
   );
 }

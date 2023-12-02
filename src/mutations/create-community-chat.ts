@@ -1,26 +1,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNostrPublishMutation } from "../nostr";
-import { Kind } from "../../../../lib/nostr-tools/event";
-import { Community } from "../../../store/communities";
+import { AccountData, NostrContext, useNostrPublishMutation } from "../nostr";
 import { ChatQueries, useNostrJoinedCommunityTeamQuery } from "../queries";
-import { getAccountFull } from "../../../api/hive";
-import { updateProfile } from "../../../api/operations";
-import { useMappedStore } from "../../../store/use-mapped-store";
+import { useContext } from "react";
+import { Kind } from "nostr-tools";
+import { KindOfCommunity } from "../types";
 
 /**
  * A custom React Query hook for creating a chat channel within a community.
  * This hook allows you to create a chat channel associated with a specific community.
  */
-export function useCreateCommunityChat(community: Community) {
+export function useCreateCommunityChat(
+  community: KindOfCommunity,
+  communityAccountData: AccountData,
+  updateCommunityAccountProfile: (
+    data: AccountData,
+    nextData: AccountData,
+  ) => Promise<void>,
+) {
   const queryClient = useQueryClient();
-  const { activeUser } = useMappedStore();
+  const { activeUsername } = useContext(NostrContext);
 
-  const { data: communityTeam } = useNostrJoinedCommunityTeamQuery(community);
+  const { data: communityTeam } = useNostrJoinedCommunityTeamQuery(
+    community,
+    communityAccountData,
+  );
   const { mutateAsync: createChannel } = useNostrPublishMutation(
     ["chats/nostr-create-channel"],
     Kind.ChannelCreation,
     () => {},
-    {}
+    {},
   );
 
   return useMutation(
@@ -35,9 +43,9 @@ export function useCreateCommunityChat(community: Community) {
           picture: "",
           communityModerators: communityTeam,
           hiddenMessageIds: [],
-          removedUserIds: []
+          removedUserIds: [],
         },
-        tags: []
+        tags: [],
       });
 
       // Step 2: Extract and format channel metadata from the response.
@@ -49,25 +57,27 @@ export function useCreateCommunityChat(community: Community) {
         communityName: content.communityName,
         name: content.name,
         about: content.about,
-        picture: content.picture
+        picture: content.picture,
       };
 
       // Step 3: Retrieve the user's profile information.
-      const response = await getAccountFull(community.name!);
-      const { posting_json_metadata } = response;
+      const { posting_json_metadata } = communityAccountData;
 
       // Step 4: Update the user's profile with the new channel information.
       const profile = JSON.parse(posting_json_metadata!).profile;
       const newProfile = {
-        channel: channelMetaData
+        channel: channelMetaData,
       };
 
-      return await updateProfile(response, { ...profile, ...newProfile });
+      return await updateCommunityAccountProfile(communityAccountData, {
+        ...profile,
+        ...newProfile,
+      });
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries([ChatQueries.CHANNELS, activeUser?.username]);
-      }
-    }
+        queryClient.invalidateQueries([ChatQueries.CHANNELS, activeUsername]);
+      },
+    },
   );
 }

@@ -2,6 +2,7 @@ import { createContext } from "react";
 import { SimplePool } from "nostr-tools";
 
 export interface AccountData {
+  name: string;
   posting_json_metadata: string;
 }
 

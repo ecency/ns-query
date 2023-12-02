@@ -15,7 +15,7 @@ type Payload = { eventMetadata: Metadata | string; tags: string[][] };
 
 export function useNostrPublishMutation(
   key: MutationKey,
-  kind: Kind,
+  kind: Kind | number,
   onBeforeSend: (event: Event) => void,
   options?: UseMutationOptions<Event, PublishNostrError | Error, Payload>,
 ) {

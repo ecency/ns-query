@@ -1,4 +1,3 @@
-export * from "./upload";
 export * from "./send-message";
 export * from "./join-chat";
 export * from "./create-community-chat";
@@ -12,5 +11,4 @@ export * from "./update-channel-blocked-users";
 export * from "./import-chat-by-keys";
 export * from "./hide-message-in-channel";
 export * from "./logout-from-chats";
-export * from "./invite-via-post-comment";
 export * from "./resend-message";
