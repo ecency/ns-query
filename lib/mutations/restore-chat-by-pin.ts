@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EncryptionTools, getUserChatPrivateKey } from "../utils";
 import { NostrContext, useKeysQuery, useNostrPublishMutation } from "../nostr";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { NostrQueries } from "../nostr/queries";
 import { useContext } from "react";
 

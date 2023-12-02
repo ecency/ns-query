@@ -1,4 +1,4 @@
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { useNostrFetchQuery } from "../core";
 import { convertEvent } from "../utils/event-converter";
 

@@ -4,10 +4,13 @@ import {
   useUpdateLeftChannels,
 } from "../nostr";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { ChatQueries, useChannelsQuery } from "../queries";
+import {
+  ChatQueries,
+  useChannelsQuery,
+  useLeftCommunityChannelsQuery,
+} from "../queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLeftCommunityChannelsQuery } from "../queries/left-community-channels-query";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { useContext } from "react";
 
 export function useAddCommunityChannel(id: string | undefined) {

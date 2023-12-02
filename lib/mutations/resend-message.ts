@@ -12,7 +12,7 @@ import { ChatQueries, useMessagesQuery } from "../queries";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { isCommunity } from "../utils";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 
 export function useResendMessage(
   currentChannel?: Channel,

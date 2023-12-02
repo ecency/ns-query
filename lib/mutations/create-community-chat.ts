@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AccountData, NostrContext, useNostrPublishMutation } from "../nostr";
 import { ChatQueries, useNostrJoinedCommunityTeamQuery } from "../queries";
 import { useContext } from "react";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { KindOfCommunity } from "../types";
 
 /**

@@ -1,5 +1,5 @@
 import { QueryKey, useQuery } from "@tanstack/react-query";
-import { Event, Filter, Kind } from "vicev-nostr-tools";
+import { Event, Filter, Kind } from "nostr-tools";
 import { useContext } from "react";
 import { NostrContext } from "../nostr-context";
 import { UseQueryOptions } from "@tanstack/react-query/src/types";

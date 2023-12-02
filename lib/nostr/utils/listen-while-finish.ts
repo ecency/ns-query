@@ -1,4 +1,4 @@
-import { Event, Filter, Kind, SimplePool } from "vicev-nostr-tools";
+import { Event, Filter, Kind, SimplePool } from "nostr-tools";
 
 export async function listenWhileFinish(
   pool: SimplePool | undefined,

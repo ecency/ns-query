@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries, useDirectContactsQuery } from "../queries";
 import { DirectContact, NostrContext, useNostrPublishMutation } from "../nostr";
 import { useContext } from "react";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 
 export function useAddDirectContact() {
   const { activeUsername } = useContext(NostrContext);

@@ -1,4 +1,4 @@
-import { generatePrivateKey, getPublicKey } from "vicev-nostr-tools";
+import { generatePrivateKey, getPublicKey } from "nostr-tools";
 
 export const createNoStrAccount = () => {
   const priv = generatePrivateKey();

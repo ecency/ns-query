@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useMemo, useRef, useState } from "react";
-import { SimplePool } from "vicev-nostr-tools";
+import { SimplePool } from "nostr-tools";
 import { AccountData, NostrContext } from "./nostr-context";
 
 export const RELAYS: Record<string, { read: true; write: true }> = {

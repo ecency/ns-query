@@ -1,4 +1,4 @@
-import { Event } from "vicev-nostr-tools";
+import { Event } from "nostr-tools";
 
 export class PublishNostrError extends Error {
   public event: Event;

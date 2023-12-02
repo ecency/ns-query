@@ -6,7 +6,7 @@ import {
 import { useContext } from "react";
 import { NostrContext } from "../nostr-context";
 import { listenWhileFinish } from "../utils";
-import { Event, Filter } from "vicev-nostr-tools";
+import { Event, Filter } from "nostr-tools";
 import { useKeysQuery } from "./keys-query";
 
 export function useNostrFetchMutation(

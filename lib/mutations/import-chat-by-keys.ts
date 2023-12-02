@@ -3,7 +3,7 @@ import { EncryptionTools } from "../utils";
 import { NostrContext, useNostrPublishMutation } from "../nostr";
 import { NostrQueries } from "../nostr/queries";
 import { useContext } from "react";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { UploadKeys } from "../types";
 
 interface Payload {

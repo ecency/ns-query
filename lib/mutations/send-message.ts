@@ -11,7 +11,7 @@ import { useAddDirectContact } from "./add-direct-contact";
 import { ChatQueries, useMessagesQuery } from "../queries";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { isCommunity } from "../utils";
 
 export function useSendMessage(

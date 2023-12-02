@@ -2,7 +2,7 @@ import { useNostrPublishMutation } from "../core";
 import { useMutation } from "@tanstack/react-query";
 import { useFindHealthyRelayQuery } from "./find-healthy-relay";
 import { convertEvent } from "../utils/event-converter";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 
 interface Payload {
   message: string;

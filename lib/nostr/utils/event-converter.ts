@@ -1,4 +1,4 @@
-import { Event, Kind, nip04 } from "vicev-nostr-tools";
+import { Event, Kind, nip04 } from "nostr-tools";
 import { findTagValue } from "./find-tag-value";
 import { filterTagValue } from "./filter-tag-value";
 import { Channel, Message, Profile } from "../types";

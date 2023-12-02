@@ -5,7 +5,7 @@ import {
   useKeysQuery,
   useNostrFetchQuery,
 } from "../nostr";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { useContext } from "react";
 
 export function useDirectContactsQuery() {

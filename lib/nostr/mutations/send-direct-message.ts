@@ -1,5 +1,5 @@
 import { useKeysQuery, useNostrPublishMutation } from "../core";
-import { Kind, nip04 } from "vicev-nostr-tools";
+import { Kind, nip04 } from "nostr-tools";
 import { useMutation } from "@tanstack/react-query";
 import { useFindHealthyRelayQuery } from "./find-healthy-relay";
 import { convertEvent } from "../utils/event-converter";

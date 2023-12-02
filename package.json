@@ -35,7 +35,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-use": "^17.4.1",
-    "vicev-nostr-tools": "^1.17.0"
+    "nostr-tools": "^1.17.0"
   },
   "scripts": {
     "build": "rimraf dist & tsc & vite build",

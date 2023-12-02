@@ -5,7 +5,7 @@ import {
   useKeysQuery,
   useNostrFetchQuery,
 } from "../nostr";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { useContext } from "react";
 

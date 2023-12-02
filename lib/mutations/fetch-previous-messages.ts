@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Channel, useNostrFetchMutation } from "../nostr";
-import { Event, Kind } from "vicev-nostr-tools";
+import { Event, Kind } from "nostr-tools";
 import { ChatQueries, useMessagesQuery } from "../queries";
 import { convertEvent } from "../nostr/utils/event-converter";
 

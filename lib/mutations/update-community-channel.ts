@@ -3,7 +3,7 @@ import { ChatQueries, useChannelsQuery } from "../queries";
 import { Channel, NostrContext, useNostrPublishMutation } from "../nostr";
 import { useFindHealthyRelayQuery } from "../nostr/mutations/find-healthy-relay";
 import { useContext } from "react";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 
 export function useUpdateCommunityChannel(channel?: Channel) {
   const queryClient = useQueryClient();

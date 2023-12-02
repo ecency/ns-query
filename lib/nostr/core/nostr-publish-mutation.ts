@@ -5,7 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useContext } from "react";
-import { Event, getEventHash, Kind, signEvent } from "vicev-nostr-tools";
+import { Event, getEventHash, Kind, signEvent } from "nostr-tools";
 import { NostrContext } from "../nostr-context";
 import { Metadata } from "../types";
 import { PublishNostrError } from "../errors";

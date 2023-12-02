@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { SimplePool } from "vicev-nostr-tools";
+import { SimplePool } from "nostr-tools";
 
 export interface AccountData {
   name: string;

@@ -2,7 +2,7 @@ import { useNostrFetchQuery } from "../nostr";
 import { findTagValue, isSha256 } from "../nostr/utils";
 import { ChatQueries } from "./queries";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { Kind } from "vicev-nostr-tools";
+import { Kind } from "nostr-tools";
 
 /**
  * Fetch custom kind of event which stores the left channels
