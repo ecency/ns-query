@@ -1,7 +1,8 @@
 {
   "name": "ns-query",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": "https://github.com/ecency/ns-query",
   "author": "ildar.timerbaev <dkildar@gmail.com>",
   "license": "MIT",

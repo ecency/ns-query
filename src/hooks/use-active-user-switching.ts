@@ -1,18 +1,18 @@
-import { useMappedStore } from "../../../store/use-mapped-store";
 import usePrevious from "react-use/lib/usePrevious";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatQueries } from "../queries";
 import { NostrQueries } from "../nostr/queries";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { NostrContext } from "../nostr";
 
 export function useActiveUserSwitching() {
-  const { activeUser } = useMappedStore();
-  const previousActiveUser = usePrevious(activeUser);
+  const { activeUsername } = useContext(NostrContext);
+  const previousActiveUser = usePrevious(activeUsername);
 
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (activeUser?.username !== previousActiveUser?.username) {
+    if (activeUsername !== previousActiveUser) {
       queryClient.setQueryData([NostrQueries.PUBLIC_MESSAGES], []);
       queryClient.setQueryData([NostrQueries.DIRECT_MESSAGES], []);
       queryClient.setQueryData([ChatQueries.LEFT_CHANNELS], []);
@@ -22,5 +22,5 @@ export function useActiveUserSwitching() {
       queryClient.invalidateQueries([ChatQueries.LEFT_CHANNELS]);
       queryClient.invalidateQueries([ChatQueries.MESSAGES]);
     }
-  }, [activeUser, previousActiveUser]);
+  }, [activeUsername, previousActiveUser]);
 }

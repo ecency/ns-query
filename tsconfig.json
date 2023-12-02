@@ -22,13 +22,15 @@
     "pretty": true,
     "target": "es5",
     "skipLibCheck": true,
+    "outDir": "./dist",
+    "declaration": true
   },
   "exclude": [
     "node_modules",
     "build",
     "scripts",
     "acceptance-tests",
-    "webpack",
+    "webpack"
   ],
   "types": ["node", "jest", "webpack-env"]
 }

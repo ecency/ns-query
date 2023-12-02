@@ -8,6 +8,7 @@ cache
 coverage
 node_modules
 build
+dist
 public/static
 .env.local
 .env.development.local
