@@ -3,3 +3,4 @@ export * from "./nostr-context";
 export * from "./core";
 export * from "./mutations";
 export * from "./types";
+export * from "./queries";

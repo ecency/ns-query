@@ -12,3 +12,4 @@ export * from "./import-chat-by-keys";
 export * from "./hide-message-in-channel";
 export * from "./logout-from-chats";
 export * from "./resend-message";
+export * from "./restore-chat-by-pin";

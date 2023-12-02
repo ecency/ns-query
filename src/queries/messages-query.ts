@@ -1,14 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDirectContactsQuery } from "./direct-contacts-query";
 import { useMemo } from "react";
-import {
-  NostrQueries,
-  useDirectMessagesQuery,
-  usePublicMessagesQuery,
-} from "../nostr/queries";
 import { ChatQueries } from "./queries";
 import { useChannelsQuery } from "./channels-query";
-import { Message, useKeysQuery } from "../nostr";
+import {
+  Message,
+  NostrQueries,
+  useDirectMessagesQuery,
+  useKeysQuery,
+  usePublicMessagesQuery,
+} from "../nostr";
 
 export function useMessagesQuery(username?: string) {
   const queryClient = useQueryClient();
