@@ -3,7 +3,7 @@ import { AccountData } from "../nostr";
 export interface UploadKeysPayload {
   pub: string;
   priv: string;
-  iv: string;
+  iv: Buffer;
 }
 export type UploadKeys = (
   username: AccountData,

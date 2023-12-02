@@ -10,7 +10,7 @@ export const RELAYS: Record<string, { read: true; write: true }> = {
   "wss://nos.lol": { read: true, write: true },
 };
 
-export function NostrProvider({ children }: PropsWithChildren) {
+export function NostrProvider({ children }: PropsWithChildren<unknown>) {
   const poolRef = useRef(new SimplePool());
   const lowLatencyPoolRef = useRef(new SimplePool({ eoseSubTimeout: 10000 }));
   const useLowLatency = false;

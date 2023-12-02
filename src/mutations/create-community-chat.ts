@@ -15,7 +15,7 @@ export function useCreateCommunityChat(
   updateCommunityAccountProfile: (
     data: AccountData,
     nextData: AccountData,
-  ) => Promise<void>,
+  ) => Promise<unknown>,
 ) {
   const queryClient = useQueryClient();
   const { activeUsername } = useContext(NostrContext);

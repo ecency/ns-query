@@ -9,7 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "lib": ["esnext", "dom"],
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noImplicitAny": true,
@@ -20,7 +20,7 @@
     "strictNullChecks": true,
     "strict": true,
     "pretty": true,
-    "target": "es5",
+    "target": "es2016",
     "skipLibCheck": true,
     "outDir": "./dist",
     "declaration": true
