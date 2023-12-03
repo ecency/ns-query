@@ -1,15 +1,11 @@
 import { ChatQueries } from "./queries";
-import {
-  DirectContact,
-  NostrContext,
-  useKeysQuery,
-  useNostrFetchQuery,
-} from "../nostr";
+import { DirectContact, useKeysQuery, useNostrFetchQuery } from "../nostr";
 import { Kind } from "nostr-tools";
 import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 export function useDirectContactsQuery() {
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
   const { hasKeys } = useKeysQuery();
 
   return useNostrFetchQuery<DirectContact[]>(

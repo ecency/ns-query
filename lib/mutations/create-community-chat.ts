@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AccountData, NostrContext, useNostrPublishMutation } from "../nostr";
+import { AccountData, useNostrPublishMutation } from "../nostr";
 import { ChatQueries, useNostrJoinedCommunityTeamQuery } from "../queries";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { KindOfCommunity } from "../types";
+import { ChatContext } from "../chat-context-provider";
 
 /**
  * A custom React Query hook for creating a chat channel within a community.
@@ -18,7 +19,7 @@ export function useCreateCommunityChat(
   ) => Promise<unknown>,
 ) {
   const queryClient = useQueryClient();
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
 
   const { data: communityTeam } = useNostrJoinedCommunityTeamQuery(
     community,

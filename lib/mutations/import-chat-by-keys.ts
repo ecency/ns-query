@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EncryptionTools } from "../utils";
-import { NostrContext, useNostrPublishMutation } from "../nostr";
+import { useNostrPublishMutation } from "../nostr";
 import { NostrQueries } from "../nostr/queries";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { UploadKeys } from "../types";
+import { ChatContext } from "../chat-context-provider";
 
 interface Payload {
   ecencyChatKey: string;
@@ -16,7 +17,7 @@ export function useImportChatByKeys(
   onSuccess?: () => void,
 ) {
   const queryClient = useQueryClient();
-  const { activeUsername, activeUserData } = useContext(NostrContext);
+  const { activeUsername, activeUserData } = useContext(ChatContext);
 
   const { mutateAsync: uploadKeys } = useMutation(
     ["chats/upload-public-key"],

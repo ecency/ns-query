@@ -6,10 +6,10 @@ import {
 } from "../../utils";
 import { useContext, useMemo } from "react";
 import { NostrQueries } from "../queries";
-import { NostrContext } from "../nostr-context";
+import { ChatContext } from "../../chat-context-provider";
 
 export function useKeysQuery() {
-  const { activeUsername, activeUserData } = useContext(NostrContext);
+  const { activeUsername, activeUserData } = useContext(ChatContext);
 
   const [{ data: publicKey }, { data: privateKey }, { data: iv }] = useQueries({
     queries: [
@@ -43,7 +43,7 @@ export function useKeysQuery() {
 
           return null;
         },
-        enabled: !!activeUserData,
+        enabled: !!activeUserData && !!activeUsername,
         initialData: null,
       },
       {

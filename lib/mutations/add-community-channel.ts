@@ -1,8 +1,4 @@
-import {
-  NostrContext,
-  useNostrFetchMutation,
-  useUpdateLeftChannels,
-} from "../nostr";
+import { useNostrFetchMutation, useUpdateLeftChannels } from "../nostr";
 import { convertEvent } from "../nostr/utils/event-converter";
 import {
   ChatQueries,
@@ -12,9 +8,10 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Kind } from "nostr-tools";
 import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 export function useAddCommunityChannel(id: string | undefined) {
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
   const { data: channels } = useChannelsQuery();
   const queryClient = useQueryClient();
 
@@ -26,7 +23,16 @@ export function useAddCommunityChannel(id: string | undefined) {
     [
       {
         kinds: [Kind.ChannelCreation],
-        ids: id ? [id] : undefined,
+        ids: [id!!],
+      },
+      {
+        kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+        "#e": [id!!],
+      },
+      {
+        kinds: [Kind.ChannelMessage],
+        "#e": [id!!],
+        limit: 20,
       },
     ],
     {

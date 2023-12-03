@@ -10,6 +10,7 @@ import { NostrContext } from "../nostr-context";
 import { Metadata } from "../types";
 import { PublishNostrError } from "../errors";
 import { NostrQueries } from "../queries";
+import { ChatContext } from "../../chat-context-provider";
 
 type Payload = { eventMetadata: Metadata | string; tags: string[][] };
 
@@ -19,7 +20,7 @@ export function useNostrPublishMutation(
   onBeforeSend: (event: Event) => void,
   options?: UseMutationOptions<Event, PublishNostrError | Error, Payload>,
 ) {
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
   const { pool, writeRelays } = useContext(NostrContext);
   const queryClient = useQueryClient();
 

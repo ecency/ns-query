@@ -1,6 +1,7 @@
-import React, { PropsWithChildren, useMemo, useRef, useState } from "react";
+import React, { PropsWithChildren, useMemo, useRef } from "react";
 import { SimplePool } from "nostr-tools";
-import { AccountData, NostrContext } from "./nostr-context";
+import { NostrContext } from "./nostr-context";
+import { useActiveUserSwitching } from "../hooks";
 
 export const RELAYS: Record<string, { read: true; write: true }> = {
   "wss://relay1.nostrchat.io": { read: true, write: true },
@@ -15,8 +16,7 @@ export function NostrProvider({ children }: PropsWithChildren<unknown>) {
   const lowLatencyPoolRef = useRef(new SimplePool({ eoseSubTimeout: 10000 }));
   const useLowLatency = false;
 
-  const [activeUsername, setActiveUsername] = useState<string>();
-  const [activeUserData, setActiveUserData] = useState<AccountData>();
+  useActiveUserSwitching();
 
   const readRelays = useMemo(
     () => Object.keys(RELAYS).filter((r) => RELAYS[r].read),
@@ -33,8 +33,6 @@ export function NostrProvider({ children }: PropsWithChildren<unknown>) {
         pool: useLowLatency ? lowLatencyPoolRef.current : poolRef.current,
         readRelays,
         writeRelays,
-        activeUsername,
-        activeUserData,
       }}
     >
       {children}

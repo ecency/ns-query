@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChatQueries } from "./queries";
 import { getUserChatPublicKey } from "../utils";
-import {
-  AccountData,
-  CommunityModerator,
-  NostrContext,
-  useKeysQuery,
-} from "../nostr";
+import { AccountData, CommunityModerator, useKeysQuery } from "../nostr";
 import { useContext } from "react";
 import { KindOfCommunity } from "../types";
+import { ChatContext } from "../chat-context-provider";
 
 export enum ROLES {
   OWNER = "owner",
@@ -27,7 +23,7 @@ export function useNostrJoinedCommunityTeamQuery(
   communityAccountData: AccountData,
   communityTeamAccountsData: AccountData[] = [],
 ) {
-  const { activeUsername, activeUserData } = useContext(NostrContext);
+  const { activeUsername, activeUserData } = useContext(ChatContext);
 
   const { hasKeys, publicKey } = useKeysQuery();
 

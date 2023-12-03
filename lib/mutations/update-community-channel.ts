@@ -1,14 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries, useChannelsQuery } from "../queries";
-import { Channel, NostrContext, useNostrPublishMutation } from "../nostr";
+import { Channel, useNostrPublishMutation } from "../nostr";
 import { useFindHealthyRelayQuery } from "../nostr/mutations/find-healthy-relay";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
+import { ChatContext } from "../chat-context-provider";
 
 export function useUpdateCommunityChannel(channel?: Channel) {
   const queryClient = useQueryClient();
   const { data: channels } = useChannelsQuery();
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
 
   const { mutateAsync: updateChannel } = useNostrPublishMutation(
     ["chats/nostr-update-channel", channel?.communityName],

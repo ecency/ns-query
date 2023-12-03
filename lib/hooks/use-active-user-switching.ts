@@ -1,12 +1,12 @@
 import usePrevious from "react-use/lib/usePrevious";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatQueries } from "../queries";
-import { NostrQueries } from "../nostr/queries";
 import { useContext, useEffect } from "react";
-import { NostrContext } from "../nostr";
+import { NostrQueries } from "../nostr";
+import { ChatContext } from "../chat-context-provider";
 
 export function useActiveUserSwitching() {
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
   const previousActiveUser = usePrevious(activeUsername);
 
   const queryClient = useQueryClient();

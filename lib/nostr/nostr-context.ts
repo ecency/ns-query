@@ -10,12 +10,8 @@ export const NostrContext = createContext<{
   pool: SimplePool | undefined;
   readRelays: string[];
   writeRelays: string[];
-  activeUsername: string | undefined;
-  activeUserData: AccountData | undefined;
 }>({
   pool: undefined,
   writeRelays: [],
   readRelays: [],
-  activeUsername: undefined,
-  activeUserData: undefined,
 });

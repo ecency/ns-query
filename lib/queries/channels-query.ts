@@ -1,16 +1,12 @@
 import { ChatQueries } from "./queries";
-import {
-  Channel,
-  NostrContext,
-  useKeysQuery,
-  useNostrFetchQuery,
-} from "../nostr";
+import { Channel, useKeysQuery, useNostrFetchQuery } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 export function useChannelsQuery() {
-  const { activeUsername } = useContext(NostrContext);
+  const { activeUsername } = useContext(ChatContext);
   const { hasKeys } = useKeysQuery();
 
   return useNostrFetchQuery<Channel[]>(

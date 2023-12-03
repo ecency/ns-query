@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EncryptionTools, getUserChatPrivateKey } from "../utils";
-import { NostrContext, useKeysQuery, useNostrPublishMutation } from "../nostr";
+import { NostrQueries, useKeysQuery, useNostrPublishMutation } from "../nostr";
 import { Kind } from "nostr-tools";
-import { NostrQueries } from "../nostr/queries";
 import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 export function useRestoreChatByPin() {
   const queryClient = useQueryClient();
-  const { activeUserData, activeUsername } = useContext(NostrContext);
+  const { activeUserData, activeUsername } = useContext(ChatContext);
 
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
