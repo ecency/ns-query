@@ -41,7 +41,7 @@ export function useChannelsQuery() {
   );
 
   const channelIds = useMemo(
-    () => [...new Set(allChannelMessages?.map((message) => message.root) ?? []).values()],
+    () => Array.from(new Set(allChannelMessages?.map((message) => message.root) ?? []).values()),
     [allChannelMessages],
   );
   const { data: joinedChannels } = useNostrFetchQuery(
