@@ -9,7 +9,10 @@ This repository contains react-query based SDK for Ececny vision and mobile proj
 ``npm install @ecency/ns-query``
 ## Setup
 1. Add `ChatContextProvider` to your `App.tsx` as root element
-2. Pass there current user information via props `<ChatContextProvider activeUsername={} activeUserData={} />`
+2. Pass there current user information via props 
+```
+<ChatContextProvider activeUsername={} activeUserData={} />
+```
 3. Use!
 
 ## Queries
