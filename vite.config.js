@@ -22,6 +22,7 @@ export default defineConfig({
         "date-fns",
         "react-dom",
         "react-use",
+        "crypto",
       ],
     },
   },
