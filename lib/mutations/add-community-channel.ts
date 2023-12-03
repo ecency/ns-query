@@ -25,15 +25,6 @@ export function useAddCommunityChannel(id: string | undefined) {
         kinds: [Kind.ChannelCreation],
         ids: [id!!],
       },
-      {
-        kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
-        "#e": [id!!],
-      },
-      {
-        kinds: [Kind.ChannelMessage],
-        "#e": [id!!],
-        limit: 20,
-      },
     ],
     {
       onSuccess: (events) => {
