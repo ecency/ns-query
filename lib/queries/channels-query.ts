@@ -1,15 +1,10 @@
-import { ChatQueries } from "./queries";
-import {
-  Channel,
-  PublicMessage,
-  useKeysQuery,
-  useNostrFetchQuery,
-} from "../nostr";
-import { Kind } from "nostr-tools";
-import { convertEvent } from "../nostr/utils/event-converter";
-import { useContext, useMemo } from "react";
-import { ChatContext } from "../chat-context-provider";
-import { useQuery } from "@tanstack/react-query";
+import {ChatQueries} from "./queries";
+import {Channel, PublicMessage, useKeysQuery, useNostrFetchQuery,} from "../nostr";
+import {Kind} from "nostr-tools";
+import {convertEvent} from "../nostr/utils/event-converter";
+import {useContext, useMemo} from "react";
+import {ChatContext} from "../chat-context-provider";
+import {useQuery} from "@tanstack/react-query";
 
 export function useChannelsQuery() {
   const { activeUsername } = useContext(ChatContext);
@@ -46,7 +41,7 @@ export function useChannelsQuery() {
   );
 
   const channelIds = useMemo(
-    () => allChannelMessages?.map((message) => message.root) ?? [],
+    () => [...new Set(allChannelMessages?.map((message) => message.root) ?? []).values()],
     [allChannelMessages],
   );
   const { data: joinedChannels } = useNostrFetchQuery(
