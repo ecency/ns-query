@@ -15,32 +15,24 @@ This repository contains react-query based SDK for Ececny vision and mobile proj
 ## Queries
 ### High-level queries
 1. [Channels query](lib/queries/channels-query.ts) – use this query for fetching user joined and created channels
-   
-   _Requirements – current user and its credentials_  
+   * _Requirements – current user and its credentials_  
 2. [Community channel query](lib/queries/community-channel-query.ts) – use this query for fetching the community channel from its posting json metadata
-
-   _Requirements – nothing_
+   * _Requirements – nothing_
 3. [Direct contacts query](lib/queries/direct-contacts-query.ts) – use this query for fetching direct contacts of active user
-
-    _Requirements – current user and its credentials_
+   * _Requirements – current user and its credentials_
 4. [Left community channels query](lib/queries/left-community-channels-query.ts) – use this query for fetching community channels from where active user had been left
-
-   _Requirements – current user and its credentials_
+   * _Requirements – current user and its credentials_
 5. [Messages query](lib/queries/messages-query.ts) – use this query for fetching channel or contact messages based on their username
-
-   _Requirements – current user and its credentials_
-   
-    _Note – this query are invalidating each N seconds periodically to keep messages fresh_
+   * _Requirements – current user and its credentials_
+   * _Note – this query are invalidating each N seconds periodically to keep messages fresh_
 6. [Joined community team query](lib/queries/nostr-joined-community-team-query.ts) – use this query for fetching community team member which joined to chats and assigned to moderation team
-
-    _Requirements – current user and its credentials_
+   * _Requirements – current user and its credentials_
 
 ### Low-level queries
 Low-level queries builds the high-level queries above
 1. [Direct messages query](lib/nostr/queries/direct-messages-query.ts) – fetches direct messages by given direct contacts
 2. [Public messages query](lib/nostr/queries/public-messages-query.ts) – fetches public messages by given channels
-
-    _Both of them builds [messages query](lib/queries/messages-query.ts) and shouldn't be used for messages management._
+   * _Both of them builds [messages query](lib/queries/messages-query.ts) and shouldn't be used for messages management._
 3. [Get user profile query](lib/nostr/queries/get-user-profile-query.ts) – fetching user metadata from Nostr by given public key
 
 ## Mutations
