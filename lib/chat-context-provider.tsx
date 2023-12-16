@@ -5,6 +5,7 @@ import React, {
   useState,
 } from "react";
 import { AccountData, NostrProvider, useKeysQuery } from "./nostr";
+import { ChatInit } from "./chat-init";
 
 interface Context {
   revealPrivateKey: boolean;
@@ -60,7 +61,10 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
         activeUserData,
       }}
     >
-      <NostrProvider>{props.children}</NostrProvider>
+      <NostrProvider>
+        <ChatInit />
+        {props.children}
+      </NostrProvider>
     </ChatContext.Provider>
   );
 };

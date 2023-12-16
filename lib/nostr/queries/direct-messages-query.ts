@@ -1,4 +1,4 @@
-import { Filter, Kind } from "nostr-tools";
+import { Kind } from "nostr-tools";
 import { useNostrFetchQuery } from "../core";
 import { convertEvent } from "../utils/event-converter";
 import { NostrQueries } from "./queries";
@@ -11,22 +11,16 @@ export function useDirectMessagesQuery(
 ) {
   return useNostrFetchQuery<Message[]>(
     [NostrQueries.DIRECT_MESSAGES],
-    directContacts.reduce<Filter[]>(
-      (acc, contact) => [
-        ...acc,
-        {
-          kinds: [Kind.EncryptedDirectMessage],
-          "#p": [contact.pubkey],
-          authors: [publicKey],
-        },
-        {
-          kinds: [Kind.EncryptedDirectMessage],
-          "#p": [publicKey],
-          authors: [contact.pubkey],
-        },
-      ],
-      [],
-    ),
+    [
+      {
+        kinds: [Kind.EncryptedDirectMessage],
+        authors: [publicKey],
+      },
+      {
+        kinds: [Kind.EncryptedDirectMessage],
+        "#p": [publicKey],
+      },
+    ],
     async (events) =>
       Promise.all(
         events.map(

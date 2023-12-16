@@ -12,14 +12,18 @@ import { useKeysQuery } from "./keys-query";
 export function useNostrFetchMutation(
   key: MutationKey,
   filters: Filter[],
-  options?: UseMutationOptions<Event[], Error>,
+  options?: UseMutationOptions<Event[], Error, Filter[] | undefined>,
 ) {
   const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
   return useMutation(
     key,
-    () => listenWhileFinish(pool, readRelays, [], publicKey!!, filters),
+    (newFilters?: Filter[]) =>
+      listenWhileFinish(pool, readRelays, [], publicKey!!, [
+        ...filters,
+        ...(newFilters ?? []),
+      ]),
     options,
   );
 }

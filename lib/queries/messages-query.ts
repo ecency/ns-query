@@ -76,7 +76,7 @@ export function useMessagesQuery(username?: string) {
           return messages
             .filter(
               (message) =>
-                !currentChannel.hiddenMessageIds?.includes(message.id),
+                !currentChannel?.hiddenMessageIds?.includes(message.id),
             )
             .sort((a, b) => a.created - b.created);
         }

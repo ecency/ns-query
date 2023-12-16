@@ -25,7 +25,7 @@ export function useFetchPreviousMessages(
 
   return useMutation(
     ["chats/fetch-previous-messages"],
-    async () => fetchPreviousChannels(),
+    async () => fetchPreviousChannels([]),
     {
       onSuccess: (events) => {
         const previousMessages = events.map((event) =>

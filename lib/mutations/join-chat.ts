@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNoStrAccount, EncryptionTools } from "../utils";
-import { useNostrPublishMutation } from "../nostr";
-import { NostrQueries } from "../nostr/queries";
+import { NostrQueries, useNostrPublishMutation } from "../nostr";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { UploadKeys, UploadKeysPayload } from "../types";
@@ -65,7 +64,7 @@ export function useJoinChat(
       );
 
       await updateProfile({
-        tags: [],
+        tags: [["p", keys.pub]],
         eventMetadata: {
           name: activeUsername!,
           about: "",
