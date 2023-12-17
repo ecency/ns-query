@@ -36,7 +36,7 @@ export function useLiveListener<DATA>(
       subInfo?.on("event", (event: Event) => processEvent(event));
       subInfo?.on("eose", () => {
         subInfo.unsub();
-        sinceRef.current = new Date().getTime();
+        sinceRef.current = new Date().getTime() / 1000;
         run();
       });
     }, 500);

@@ -105,6 +105,11 @@ export function useLiveDirectMessagesListener() {
           activeUsername,
           contact.pubkey,
         ]);
+        await queryClient.invalidateQueries([
+          ChatQueries.MESSAGES,
+          activeUsername,
+          contact.pubkey,
+        ]);
       }
 
       queryClient.setQueryData(

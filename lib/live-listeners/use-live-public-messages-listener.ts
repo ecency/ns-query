@@ -38,7 +38,7 @@ export function useLivePublicMessagesListener() {
 
       const previousData = queryClient.getQueryData<
         InfiniteData<PublicMessage[]>
-      >([NostrQueries.DIRECT_MESSAGES, activeUsername, channel.id]);
+      >([NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id]);
 
       if (previousData) {
         const dump: InfiniteData<PublicMessage[]> = {
@@ -47,20 +47,22 @@ export function useLivePublicMessagesListener() {
         };
         dump.pages[0] = [...dump.pages[0], message as PublicMessage];
         queryClient.setQueryData(
-          [NostrQueries.DIRECT_MESSAGES, activeUsername, channel.id],
+          [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
           dump,
         );
+
         await queryClient.invalidateQueries([
-          NostrQueries.DIRECT_MESSAGES,
+          NostrQueries.PUBLIC_MESSAGES,
+          activeUsername,
+          channel.id,
+        ]);
+        await queryClient.invalidateQueries([
+          ChatQueries.MESSAGES,
           activeUsername,
           channel.id,
         ]);
       }
-      await queryClient.invalidateQueries([
-        NostrQueries.PUBLIC_MESSAGES,
-        activeUsername,
-        channel.id,
-      ]);
+
       await queryClient.invalidateQueries([
         ChatQueries.LAST_MESSAGE,
         activeUsername,
