@@ -1,17 +1,18 @@
-import {DirectMessage, useDirectMessagesQuery, useKeysQuery, useNostrFetchMutation,} from "../nostr";
-import {useDirectContactsQuery} from "./direct-contacts-query";
-import {useAddDirectContact} from "../mutations";
-import {Kind} from "nostr-tools";
-import {useEffect} from "react";
+import {
+  DirectMessage,
+  useDirectMessagesQuery,
+  useKeysQuery,
+  useNostrFetchMutation,
+} from "../nostr";
+import { useDirectContactsQuery } from "./direct-contacts-query";
+import { useAddDirectContact } from "../mutations";
+import { Kind } from "nostr-tools";
+import { useEffect } from "react";
 
 export function useListenNewComingMessagesQuery() {
   const contactsQuery = useDirectContactsQuery();
   const { publicKey, privateKey } = useKeysQuery();
-  const { data: directMessages } = useDirectMessagesQuery(
-    contactsQuery.data ?? [],
-    publicKey!!,
-    privateKey!!,
-  );
+  const { data: directMessages } = useDirectMessagesQuery();
   const { mutateAsync: addDirectContact } = useAddDirectContact();
   const { mutateAsync: getAccountMetadata } = useNostrFetchMutation(
     ["chats/update-nostr-profile"],

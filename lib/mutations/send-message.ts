@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 import {
   Channel,
+  DirectContact,
   useKeysQuery,
   useNostrSendDirectMessage,
   useNostrSendPublicMessage,
@@ -16,7 +17,7 @@ import { isCommunity } from "../utils";
 
 export function useSendMessage(
   currentChannel?: Channel,
-  currentUser?: string,
+  currentContact?: DirectContact,
   onSuccess?: () => void,
 ) {
   const queryClient = useQueryClient();
@@ -24,7 +25,8 @@ export function useSendMessage(
   const { receiverPubKey } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
   const { data: messages } = useMessagesQuery(
-    currentChannel?.communityName ?? currentUser,
+    currentChannel?.communityName ?? currentContact?.name,
+    currentChannel?.id ?? currentContact?.pubkey,
   );
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
@@ -47,7 +49,7 @@ export function useSendMessage(
         );
       }
 
-      if (!currentChannel && isCommunity(currentUser)) {
+      if (!currentChannel && isCommunity(currentContact?.name)) {
         throw new Error(
           "[Chat][SendMessage] – provided user is community but channel not found",
         );
@@ -55,13 +57,13 @@ export function useSendMessage(
 
       // Add user to direct contacts if it's not there yet
       // E.g. if user opened chat room directly from the address bar
-      if (currentUser) {
-        addDirectContact({ pubkey: receiverPubKey, name: currentUser });
+      if (currentContact) {
+        addDirectContact(currentContact);
       }
 
       if (currentChannel) {
         return sendPublicMessage({ message });
-      } else if (currentUser) {
+      } else if (currentContact) {
         return sendDirectMessage(message);
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
@@ -71,7 +73,11 @@ export function useSendMessage(
       onSuccess: (message) => {
         message.sent = 0;
         queryClient.setQueryData(
-          [ChatQueries.MESSAGES, currentChannel?.communityName ?? currentUser],
+          [
+            ChatQueries.MESSAGES,
+            currentChannel?.communityName ?? currentContact?.name,
+            currentChannel?.id ?? currentContact?.pubkey,
+          ],
           [...messages, message],
         );
         onSuccess?.();
@@ -85,7 +91,8 @@ export function useSendMessage(
           queryClient.setQueryData(
             [
               ChatQueries.MESSAGES,
-              currentChannel?.communityName ?? currentUser,
+              currentChannel?.communityName ?? currentContact?.name,
+              currentChannel?.id ?? currentContact?.pubkey,
             ],
             [...messages, message],
           );

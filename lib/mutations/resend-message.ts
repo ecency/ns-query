@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 import {
   Channel,
+  DirectContact,
   Message,
   useKeysQuery,
   useNostrSendDirectMessage,
@@ -16,7 +17,7 @@ import { Kind } from "nostr-tools";
 
 export function useResendMessage(
   currentChannel?: Channel,
-  currentUser?: string,
+  currentContact?: DirectContact,
   onSuccess?: () => void,
 ) {
   const queryClient = useQueryClient();
@@ -24,7 +25,8 @@ export function useResendMessage(
   const { receiverPubKey } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
   const { data: messages } = useMessagesQuery(
-    currentChannel?.communityName ?? currentUser,
+    currentChannel?.communityName ?? currentContact?.name,
+    currentChannel?.id ?? currentContact?.pubkey,
   );
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
@@ -40,7 +42,7 @@ export function useResendMessage(
   return useMutation(
     ["chats/send-message"],
     async (message: Message) => {
-      if (!currentChannel && isCommunity(currentUser)) {
+      if (!currentChannel && isCommunity(currentContact?.name)) {
         throw new Error(
           "[Chat][SendMessage] – provided user is community but channel not found",
         );
@@ -48,7 +50,7 @@ export function useResendMessage(
 
       if (currentChannel) {
         return sendPublicMessage({ message: message.content });
-      } else if (currentUser) {
+      } else if (currentContact) {
         return sendDirectMessage(message.content);
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
@@ -58,7 +60,11 @@ export function useResendMessage(
       onSuccess: (message) => {
         message.sent = 0;
         queryClient.setQueryData(
-          [ChatQueries.MESSAGES, currentChannel?.communityName ?? currentUser],
+          [
+            ChatQueries.MESSAGES,
+            currentChannel?.communityName ?? currentContact?.name,
+            currentChannel?.id ?? currentContact?.pubkey,
+          ],
           [
             ...messages.filter(
               (m) => m.content !== message.content && m.sent !== 2,
@@ -77,7 +83,8 @@ export function useResendMessage(
           queryClient.setQueryData(
             [
               ChatQueries.MESSAGES,
-              currentChannel?.communityName ?? currentUser,
+              currentChannel?.communityName ?? currentContact?.name,
+              currentChannel?.id ?? currentContact?.pubkey,
             ],
             [
               ...messages.filter(

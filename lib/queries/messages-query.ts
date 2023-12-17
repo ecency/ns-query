@@ -6,32 +6,50 @@ import { useChannelsQuery } from "./channels-query";
 import {
   Message,
   NostrQueries,
-  useDirectMessagesQuery,
   useKeysQuery,
   usePublicMessagesQuery,
 } from "../nostr";
 
-export function useMessagesQuery(username?: string) {
+/**
+ * Hook for fetching message for specific contact or channel
+ * @note contact list could contain multiple contacts with same name but different private key
+ *    it should be handled separately
+ * @param username – username from the URL or selecting from sidebar
+ * @param pubKeyOrID – public key or ID of channel
+ */
+export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
   const queryClient = useQueryClient();
 
-  const { privateKey, publicKey, hasKeys } = useKeysQuery();
+  const { hasKeys } = useKeysQuery();
   const { data: directContacts } = useDirectContactsQuery();
   const { data: channels } = useChannelsQuery();
 
-  useDirectMessagesQuery(directContacts ?? [], publicKey!!, privateKey!!);
   usePublicMessagesQuery(channels ?? []);
 
   const currentChannel = useMemo(
-    () => channels?.find((channel) => channel.communityName === username),
+    () =>
+      channels?.find(
+        (channel) =>
+          channel.communityName === username && channel.id === pubKeyOrID,
+      ),
     [channels, username],
   );
   const currentContact = useMemo(
-    () => directContacts?.find((c) => c.name === username),
+    () =>
+      directContacts?.find(
+        (c) => c.name === username && c.pubkey === pubKeyOrID,
+      ) ??
+      (!!username && !!pubKeyOrID
+        ? {
+            name: username,
+            pubkey: pubKeyOrID,
+          }
+        : undefined),
     [directContacts, username],
   );
 
   return useQuery<Message[]>(
-    [ChatQueries.MESSAGES, username],
+    [ChatQueries.MESSAGES, username, pubKeyOrID],
     async () => {
       if (!username) {
         return [];
@@ -70,7 +88,7 @@ export function useMessagesQuery(username?: string) {
     },
     {
       initialData: [],
-      enabled: hasKeys && !!username,
+      enabled: hasKeys && (!!currentContact || !!currentChannel),
       select: (messages) => {
         if (currentChannel) {
           return messages

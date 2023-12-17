@@ -10,7 +10,10 @@ export function useFetchPreviousMessages(
 ) {
   const queryClient = useQueryClient();
 
-  const { data: messages } = useMessagesQuery(channel?.communityName);
+  const { data: messages } = useMessagesQuery(
+    channel?.communityName,
+    channel?.id,
+  );
   const { mutateAsync: fetchPreviousChannels } = useNostrFetchMutation(
     ["chats/nostr-fetch-previous-messages"],
     [
