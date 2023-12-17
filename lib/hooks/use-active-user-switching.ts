@@ -13,8 +13,8 @@ export function useActiveUserSwitching() {
 
   useEffect(() => {
     if (activeUsername !== previousActiveUser) {
-      queryClient.setQueryData([NostrQueries.PUBLIC_MESSAGES], []);
-      queryClient.setQueryData([NostrQueries.DIRECT_MESSAGES], []);
+      queryClient.setQueryData([NostrQueries.PUBLIC_MESSAGES], { pages: [] });
+      queryClient.setQueryData([NostrQueries.DIRECT_MESSAGES], { pages: [] });
       queryClient.setQueryData([ChatQueries.LEFT_CHANNELS], []);
 
       queryClient.invalidateQueries([NostrQueries.PUBLIC_MESSAGES]);

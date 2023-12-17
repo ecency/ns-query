@@ -1,5 +1,4 @@
 import {
-  DirectMessage,
   Message,
   NostrQueries,
   PublicMessage,
@@ -8,7 +7,7 @@ import {
 } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries, useChannelsQuery } from "../queries";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
@@ -37,25 +36,26 @@ export function useLivePublicMessagesListener() {
         return;
       }
 
-      const directMessage = message as DirectMessage;
-      const previousData = queryClient.getQueryData<PublicMessage[]>([
-        NostrQueries.PUBLIC_MESSAGES,
-        activeUsername,
-        channel.id,
-      ]);
+      const previousData = queryClient.getQueryData<
+        InfiniteData<PublicMessage[]>
+      >([NostrQueries.DIRECT_MESSAGES, activeUsername, channel.id]);
 
-      if (previousData?.some((m) => m.id === directMessage.id)) {
-        return;
+      if (previousData) {
+        const dump: InfiniteData<PublicMessage[]> = {
+          ...previousData,
+          pages: [...previousData.pages],
+        };
+        dump.pages[0] = [...dump.pages[0], message as PublicMessage];
+        queryClient.setQueryData(
+          [NostrQueries.DIRECT_MESSAGES, activeUsername, channel.id],
+          dump,
+        );
+        await queryClient.invalidateQueries([
+          NostrQueries.DIRECT_MESSAGES,
+          activeUsername,
+          channel.id,
+        ]);
       }
-
-      queryClient.setQueryData(
-        [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
-        [...(previousData ?? []), directMessage],
-      );
-      queryClient.setQueryData(
-        [ChatQueries.LAST_MESSAGE, activeUsername, channel.id],
-        message,
-      );
       await queryClient.invalidateQueries([
         NostrQueries.PUBLIC_MESSAGES,
         activeUsername,

@@ -8,7 +8,7 @@ import {
 } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { useAddDirectContact } from "../mutations";
 import { ChatQueries, useDirectContactsQuery } from "../queries";
 import { useContext } from "react";
@@ -86,25 +86,26 @@ export function useLiveDirectMessagesListener() {
       }
 
       const directMessage = message as DirectMessage;
-      const previousData = queryClient.getQueryData<DirectMessage[]>([
-        NostrQueries.DIRECT_MESSAGES,
-        activeUsername,
-        contact.pubkey,
-      ]);
+      const previousData = queryClient.getQueryData<
+        InfiniteData<DirectMessage[]>
+      >([NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey]);
 
-      if (previousData?.some((m) => m.id === directMessage.id)) {
-        return;
+      if (previousData) {
+        const dump: InfiniteData<DirectMessage[]> = {
+          ...previousData,
+          pages: [...previousData.pages],
+        };
+        dump.pages[0] = [...dump.pages[0], directMessage];
+        queryClient.setQueryData(
+          [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
+          dump,
+        );
+        await queryClient.invalidateQueries([
+          NostrQueries.DIRECT_MESSAGES,
+          activeUsername,
+          contact.pubkey,
+        ]);
       }
-
-      queryClient.setQueryData(
-        [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
-        [...(previousData ?? []), directMessage],
-      );
-      await queryClient.invalidateQueries([
-        NostrQueries.DIRECT_MESSAGES,
-        activeUsername,
-        contact.pubkey,
-      ]);
 
       queryClient.setQueryData(
         [ChatQueries.LAST_MESSAGE, activeUsername, contact.pubkey],

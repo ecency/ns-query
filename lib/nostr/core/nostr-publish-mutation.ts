@@ -70,7 +70,7 @@ export function useNostrPublishMutation(
         onBeforeSend(signedEvent);
 
         try {
-          await pool?.publish(writeRelays, signedEvent);
+          await Promise.all(pool?.publish(writeRelays, signedEvent) ?? []);
           resolve(signedEvent);
         } catch (e) {
           throw new PublishNostrError(
