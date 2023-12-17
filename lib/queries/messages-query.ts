@@ -5,7 +5,7 @@ import { ChatQueries } from "./queries";
 import { useChannelsQuery } from "./channels-query";
 import {
   Message,
-  NostrQueries,
+  useDirectMessagesQuery,
   useKeysQuery,
   usePublicMessagesQuery,
 } from "../nostr";
@@ -23,8 +23,6 @@ export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
   const { hasKeys } = useKeysQuery();
   const { data: directContacts } = useDirectContactsQuery();
   const { data: channels } = useChannelsQuery();
-
-  usePublicMessagesQuery(channels ?? []);
 
   const currentChannel = useMemo(
     () =>
@@ -48,38 +46,48 @@ export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
     [directContacts, username],
   );
 
+  const { data: directMessages } = useDirectMessagesQuery(currentContact);
+  const { data: publicMessages } = usePublicMessagesQuery(currentChannel);
+
   return useQuery<Message[]>(
     [ChatQueries.MESSAGES, username, pubKeyOrID],
     async () => {
-      if (!username) {
+      if (!username || !pubKeyOrID) {
         return [];
       }
 
-      let initialMessages: Message[];
-      if (!!currentChannel) {
-        initialMessages =
-          queryClient
-            .getQueryData<Message[]>([NostrQueries.PUBLIC_MESSAGES])
-            ?.filter((i) => i.root === currentChannel.id) ?? [];
-      } else {
-        initialMessages =
-          queryClient
-            .getQueryData<Message[]>([NostrQueries.DIRECT_MESSAGES])
-            ?.filter((i) =>
-              "peer" in i
-                ? i.peer === currentContact?.pubkey
-                : i.root === currentContact?.pubkey,
-            ) ?? [];
+      let initialMessages: Message[] = [];
+      if (!!currentChannel && publicMessages) {
+        initialMessages = publicMessages.pages.reduce<Message[]>(
+          (acc, page) => [...acc, ...page],
+          [],
+        );
+      } else if (directMessages && currentContact) {
+        initialMessages = directMessages.pages.reduce<Message[]>(
+          (acc, page) => [...acc, ...page],
+          [],
+        );
       }
+
+      if (initialMessages.length === 0) {
+        return [];
+      }
+
       const pendingMessages = (
-        queryClient.getQueryData<Message[]>([ChatQueries.MESSAGES, username]) ??
-        []
+        queryClient.getQueryData<Message[]>([
+          ChatQueries.MESSAGES,
+          username,
+          pubKeyOrID,
+        ]) ?? []
       ).filter(
         (m) => m.sent === 0 && !initialMessages.some((im) => im.id === m.id),
       );
       const failedMessages = (
-        queryClient.getQueryData<Message[]>([ChatQueries.MESSAGES, username]) ??
-        []
+        queryClient.getQueryData<Message[]>([
+          ChatQueries.MESSAGES,
+          username,
+          pubKeyOrID,
+        ]) ?? []
       ).filter(
         (m) => m.sent === 2 && !initialMessages.some((im) => im.id === m.id),
       );
@@ -100,7 +108,7 @@ export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
         }
         return messages.sort((a, b) => a.created - b.created);
       },
-      refetchInterval: 3000,
+      refetchInterval: 1000,
     },
   );
 }

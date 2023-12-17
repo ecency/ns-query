@@ -1,31 +1,27 @@
-import { Filter, Kind } from "nostr-tools";
-import { useNostrFetchQuery } from "../core";
+import { Kind } from "nostr-tools";
 import { convertEvent } from "../utils/event-converter";
 import { NostrQueries } from "./queries";
 import { Channel, Message } from "../types";
+import { useNostrInfiniteFetchQuery } from "../core/nostr-infinite-fetch-query";
 
-export function usePublicMessagesQuery(channels: Channel[]) {
-  return useNostrFetchQuery<Message[]>(
+export function usePublicMessagesQuery(channel?: Channel) {
+  return useNostrInfiniteFetchQuery<Message[]>(
     [NostrQueries.PUBLIC_MESSAGES],
-    channels.reduce<Filter[]>(
-      (acc, channel) => [
-        ...acc,
-        {
-          kinds: [Kind.ChannelMessage],
-          "#e": [channel.id],
-          limit: 50,
-        },
-      ],
-      [],
-    ),
+    [
+      {
+        kinds: [Kind.ChannelMessage],
+        "#e": [channel?.id ?? ""],
+        limit: 50,
+      },
+    ],
     (events) =>
       events
         .map((event) => convertEvent(event))
         .filter((message) => !!message) as Message[],
     {
-      enabled: channels.length > 0,
-      initialData: [],
-      refetchInterval: 10000,
+      enabled: !!channel,
+      initialData: { pages: [[]], pageParams: [] },
+      getNextPageParam: (lastPage) => lastPage?.[lastPage?.length - 1]?.created,
     },
   );
 }

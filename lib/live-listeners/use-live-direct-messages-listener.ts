@@ -1,5 +1,4 @@
 import {
-  DirectContact,
   DirectMessage,
   Message,
   NostrQueries,
@@ -11,7 +10,7 @@ import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAddDirectContact } from "../mutations";
-import { ChatQueries } from "../queries";
+import { ChatQueries, useDirectContactsQuery } from "../queries";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 
@@ -19,6 +18,8 @@ export function useLiveDirectMessagesListener() {
   const queryClient = useQueryClient();
 
   const { activeUsername } = useContext(ChatContext);
+
+  const { data: directContacts } = useDirectContactsQuery();
   const { publicKey, privateKey } = useKeysQuery();
 
   const { mutateAsync: addDirectContact } = useAddDirectContact();
@@ -35,11 +36,14 @@ export function useLiveDirectMessagesListener() {
       },
     ]);
     if (data.length > 0) {
-      await addDirectContact({
+      const nextContact = {
         pubkey,
         name: JSON.parse(data[0]?.content)?.name ?? "",
-      });
+      };
+      await addDirectContact(nextContact);
+      return nextContact;
     }
+    return;
   };
 
   useLiveListener<Message | null>(
@@ -63,10 +67,29 @@ export function useLiveDirectMessagesListener() {
       if (!message) {
         return;
       }
+      let contact = directContacts?.find(
+        (dc) =>
+          dc.pubkey === message.creator ||
+          dc.pubkey === (message as DirectMessage).peer,
+      );
+
+      if (!contact) {
+        const pubKey =
+          message.creator !== publicKey
+            ? message.creator
+            : (message as DirectMessage).peer;
+        contact = await addContact(pubKey);
+      }
+
+      if (!contact) {
+        return;
+      }
 
       const directMessage = message as DirectMessage;
       const previousData = queryClient.getQueryData<DirectMessage[]>([
         NostrQueries.DIRECT_MESSAGES,
+        activeUsername,
+        contact.pubkey,
       ]);
 
       if (previousData?.some((m) => m.id === directMessage.id)) {
@@ -74,30 +97,19 @@ export function useLiveDirectMessagesListener() {
       }
 
       queryClient.setQueryData(
-        [NostrQueries.DIRECT_MESSAGES],
+        [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
         [...(previousData ?? []), directMessage],
       );
-      await queryClient.invalidateQueries([NostrQueries.DIRECT_MESSAGES]);
+      await queryClient.invalidateQueries([
+        NostrQueries.DIRECT_MESSAGES,
+        activeUsername,
+        contact.pubkey,
+      ]);
 
-      const contacts =
-        queryClient.getQueryData<DirectContact[]>([
-          ChatQueries.DIRECT_CONTACTS,
-          activeUsername,
-        ]) ?? [];
-      if (
-        !contacts.every(
-          (c) =>
-            c.pubkey === message.creator ||
-            c.pubkey === (message as DirectMessage).peer,
-        ) ||
-        contacts.length === 0
-      ) {
-        const pubKey =
-          message.creator !== publicKey
-            ? message.creator
-            : (message as DirectMessage).peer;
-        await addContact(pubKey);
-      }
+      queryClient.setQueryData(
+        [ChatQueries.LAST_MESSAGE, activeUsername, contact.pubkey],
+        message,
+      );
     },
     { enabled: !!publicKey && !!privateKey },
   );
