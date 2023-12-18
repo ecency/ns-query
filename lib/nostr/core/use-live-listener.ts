@@ -2,7 +2,7 @@ import { Event, Filter } from "nostr-tools";
 import { useContext, useEffect, useRef } from "react";
 import { NostrContext } from "../nostr-context";
 
-export function useLiveListener<DATA>(
+export function useLiveListener<DATA extends object>(
   filters: Filter[],
   dataResolver: (event: Event) => DATA | Promise<DATA>,
   emitter: (data: DATA) => void,
@@ -12,7 +12,7 @@ export function useLiveListener<DATA>(
 ) {
   const { pool, readRelays } = useContext(NostrContext);
   const timeoutRef = useRef<any>();
-  const sinceRef = useRef<number>(new Date().getTime());
+  const sinceRef = useRef<number>(Math.floor(new Date().getTime() / 1000));
 
   useEffect(() => {
     if (!options.enabled) {
@@ -36,7 +36,6 @@ export function useLiveListener<DATA>(
       subInfo?.on("event", (event: Event) => processEvent(event));
       subInfo?.on("eose", () => {
         subInfo.unsub();
-        sinceRef.current = new Date().getTime() / 1000;
         run();
       });
     }, 500);
@@ -44,6 +43,10 @@ export function useLiveListener<DATA>(
 
   const processEvent = async (event: Event) => {
     const data = await dataResolver(event);
+    sinceRef.current =
+      "created" in data
+        ? (data.created as number) + 1
+        : Math.floor(new Date().getTime() / 1000);
     emitter(data);
   };
 }

@@ -1,4 +1,5 @@
 import {
+  DirectContact,
   DirectMessage,
   Message,
   NostrQueries,
@@ -10,7 +11,7 @@ import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { useAddDirectContact } from "../mutations";
-import { ChatQueries, useDirectContactsQuery } from "../queries";
+import { ChatQueries } from "../queries";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 
@@ -19,7 +20,6 @@ export function useLiveDirectMessagesListener() {
 
   const { activeUsername } = useContext(ChatContext);
 
-  const { data: directContacts } = useDirectContactsQuery();
   const { publicKey, privateKey } = useKeysQuery();
 
   const { mutateAsync: addDirectContact } = useAddDirectContact();
@@ -46,7 +46,7 @@ export function useLiveDirectMessagesListener() {
     return;
   };
 
-  useLiveListener<Message | null>(
+  useLiveListener<Message>(
     [
       {
         kinds: [Kind.EncryptedDirectMessage],
@@ -62,12 +62,17 @@ export function useLiveDirectMessagesListener() {
         event,
         publicKey!!,
         privateKey!!,
-      ),
+      )!!,
     async (message) => {
       if (!message) {
         return;
       }
-      let contact = directContacts?.find(
+      const directContacts =
+        queryClient.getQueryData<DirectContact[]>([
+          ChatQueries.DIRECT_CONTACTS,
+          activeUsername,
+        ]) ?? [];
+      let contact = directContacts.find(
         (dc) =>
           dc.pubkey === message.creator ||
           dc.pubkey === (message as DirectMessage).peer,
@@ -95,7 +100,13 @@ export function useLiveDirectMessagesListener() {
           ...previousData,
           pages: [...previousData.pages],
         };
+
+        // Ignore duplicates
+        if (dump.pages[0].some((m) => m.id === message.id)) {
+          return;
+        }
         dump.pages[0] = [...dump.pages[0], directMessage];
+
         queryClient.setQueryData(
           [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
           dump,
