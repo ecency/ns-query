@@ -8,4 +8,5 @@ export type Metadata = {
   communityModerators?: CommunityModerator[];
   hiddenMessageIds?: string[];
   removedUserIds?: string[];
+  joinedChannels?: string[];
 };

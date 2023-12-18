@@ -2,26 +2,30 @@ import { Kind } from "nostr-tools";
 import { useNostrFetchQuery } from "../core";
 import { convertEvent } from "../utils/event-converter";
 
-export function useNostrGetUserProfileQuery(user: string) {
+export function useNostrGetUserProfileQuery(pubKey?: string | null) {
   return useNostrFetchQuery(
-    ["chats/nostr-get-user-profile", user],
+    ["chats/nostr-get-user-profile", pubKey],
     [
       {
         kinds: [Kind.Metadata],
-        authors: [user],
+        authors: [pubKey!!],
       },
     ],
     (events) =>
       events
         .map((event) => convertEvent<Kind.Metadata>(event)!!)
         .filter((profile) => profile!!),
+    {
+      enabled: !!pubKey,
+      refetchOnMount: false,
+    },
   );
 }
 
-export function useNostrGetUserProfilesQuery(users: string[]) {
+export function useNostrGetUserProfilesQuery(pubKeys: string[]) {
   return useNostrFetchQuery(
-    ["chats/nostr-get-user-profile", users.join("")],
-    users.map((user) => ({
+    ["chats/nostr-get-user-profile", pubKeys.join("")],
+    pubKeys.map((user) => ({
       kinds: [Kind.Metadata],
       authors: [user],
     })),
@@ -31,6 +35,7 @@ export function useNostrGetUserProfilesQuery(users: string[]) {
         .filter((profile) => profile!!),
     {
       initialData: [],
+      refetchOnMount: false,
     },
   );
 }

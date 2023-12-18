@@ -1,13 +1,13 @@
 import { ChatQueries } from "./queries";
 import {
   Channel,
-  PublicMessage,
   useKeysQuery,
   useNostrFetchQuery,
+  useNostrGetUserProfileQuery,
 } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect } from "react";
 import { ChatContext } from "../chat-context-provider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -30,44 +30,20 @@ export function useChannelsQuery() {
       refetchOnMount: false,
     },
   );
-  const { data: allChannelMessages } = useNostrFetchQuery(
-    [ChatQueries.CHANNELS_MESSAGES, activeUsername],
-    [
-      {
-        kinds: [Kind.ChannelMessage],
-        authors: [publicKey!!],
-      },
-    ],
-    (events) =>
-      events
-        .map((event) => convertEvent<Kind.ChannelMessage>(event))
-        .filter((channel) => !!channel) as PublicMessage[],
-    {
-      enabled: !!publicKey,
-    },
-  );
-
-  const channelIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          allChannelMessages?.map((message) => message.root) ?? [],
-        ).values(),
-      ),
-    [allChannelMessages],
-  );
+  const { data: activeUserNostrProfiles } =
+    useNostrGetUserProfileQuery(publicKey);
   const { data: joinedChannels } = useNostrFetchQuery(
     [ChatQueries.JOINED_CHANNELS],
-    channelIds.map((id) => ({
+    activeUserNostrProfiles?.[0]?.joinedChannels?.map((id) => ({
       kinds: [Kind.ChannelCreation],
       ids: [id],
-    })),
+    })) ?? [],
     (events) =>
       events
         .map((event) => convertEvent<Kind.ChannelCreation>(event))
         .filter((channel) => !!channel) as Channel[],
     {
-      enabled: channelIds.length > 0,
+      enabled: (activeUserNostrProfiles?.[0]?.joinedChannels?.length ?? 0) > 0,
     },
   );
 

@@ -1,8 +1,12 @@
 import { useLayoutEffect } from "react";
 import { useMessagesQuery } from "../queries";
+import { Channel, DirectContact } from "../nostr";
 
-export function useAutoScrollInChatBox(username: string, pubkey: string) {
-  const { data } = useMessagesQuery(username, pubkey);
+export function useAutoScrollInChatBox(
+  currentContact?: DirectContact,
+  currentChannel?: Channel,
+) {
+  const { data } = useMessagesQuery(currentContact, currentChannel);
 
   useLayoutEffect(() => {
     if (data.length > 0) {
