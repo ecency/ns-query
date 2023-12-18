@@ -1,5 +1,5 @@
 {
-  "name": "ns-query",
+  "name": "@ecency/ns-query",
   "description": "React-query based Nostr protocol SDK for Ecency vision and mobile",
   "version": "0.0.2",
   "repository": "https://github.com/ecency/ns-query",
