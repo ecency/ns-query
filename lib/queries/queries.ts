@@ -1,15 +1,11 @@
 export enum ChatQueries {
-  SEARCH_USER = "chats/search-user",
   DIRECT_CONTACTS = "chats/direct-contacts",
   MESSAGES = "chats/messages",
   CREATED_CHANNELS = "chats/created-channels",
   JOINED_CHANNELS = "chats/joined-channels",
-  CHANNELS_MESSAGES = "chats/channels-messages",
   CHANNELS = "chats/channels",
   LEFT_CHANNELS = "chats/left-channels",
   COMMUNITY_CHANNEL = "chats/community-channel",
   COMMUNITY_ROLES = "chats/community-roles",
-  FETCH_LAST_DIRECT_MESSAGES = "chats/last-direct-messages",
-  FETCH_LAST_PUBLIC_MESSAGES = "chats/last-public-messages",
   LAST_MESSAGE = "chats/last-message",
 }

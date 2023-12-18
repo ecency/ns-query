@@ -69,6 +69,7 @@ export function useJoinChat(
           name: activeUsername!,
           about: "",
           picture: "",
+          joinedChannels: [],
         },
       });
     },

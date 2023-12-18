@@ -109,6 +109,7 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
         name: content.name || "",
         about: content.about || "",
         picture: content.picture || "",
+        joinedChannels: content.joinedChannels ?? [],
       } as any;
     case "30078":
       return content;

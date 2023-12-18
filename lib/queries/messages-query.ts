@@ -1,60 +1,54 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDirectContactsQuery } from "./direct-contacts-query";
-import { useMemo } from "react";
+import { InfiniteData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries } from "./queries";
-import { useChannelsQuery } from "./channels-query";
 import {
+  Channel,
+  DirectContact,
   Message,
+  NostrQueries,
   useDirectMessagesQuery,
   useKeysQuery,
   usePublicMessagesQuery,
 } from "../nostr";
+import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 /**
  * Hook for fetching message for specific contact or channel
  * @note contact list could contain multiple contacts with same name but different private key
  *    it should be handled separately
- * @param username – username from the URL or selecting from sidebar
- * @param pubKeyOrID – public key or ID of channel
  */
-export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
+export function useMessagesQuery(
+  currentContact?: DirectContact,
+  currentChannel?: Channel,
+) {
+  const { activeUsername } = useContext(ChatContext);
   const queryClient = useQueryClient();
 
   const { hasKeys } = useKeysQuery();
-  const { data: directContacts } = useDirectContactsQuery();
-  const { data: channels } = useChannelsQuery();
 
-  const currentChannel = useMemo(
-    () =>
-      channels?.find(
-        (channel) =>
-          channel.communityName === username && channel.id === pubKeyOrID,
-      ),
-    [channels, username],
-  );
-  const currentContact = useMemo(
-    () =>
-      directContacts?.find(
-        (c) => c.name === username && c.pubkey === pubKeyOrID,
-      ) ??
-      (!!username && !!pubKeyOrID
-        ? {
-            name: username,
-            pubkey: pubKeyOrID,
-          }
-        : undefined),
-    [directContacts, username],
-  );
-
-  const { data: directMessages } = useDirectMessagesQuery(currentContact);
-  const { data: publicMessages } = usePublicMessagesQuery(currentChannel);
+  useDirectMessagesQuery(currentContact);
+  usePublicMessagesQuery(currentChannel);
 
   return useQuery<Message[]>(
-    [ChatQueries.MESSAGES, username, pubKeyOrID],
+    [
+      ChatQueries.MESSAGES,
+      activeUsername,
+      currentChannel?.id ?? currentContact?.pubkey,
+    ],
     async () => {
-      if (!username || !pubKeyOrID) {
+      if (!currentContact && !currentChannel) {
         return [];
       }
+      const directMessages = queryClient.getQueryData<InfiniteData<Message[]>>([
+        NostrQueries.DIRECT_MESSAGES,
+        activeUsername,
+        currentContact?.pubkey,
+      ]);
+      const publicMessages = queryClient.getQueryData<InfiniteData<Message[]>>([
+        NostrQueries.PUBLIC_MESSAGES,
+        activeUsername,
+        currentChannel?.id,
+      ]);
 
       let initialMessages: Message[] = [];
       if (!!currentChannel && publicMessages) {
@@ -76,8 +70,8 @@ export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
       const pendingMessages = (
         queryClient.getQueryData<Message[]>([
           ChatQueries.MESSAGES,
-          username,
-          pubKeyOrID,
+          activeUsername,
+          currentChannel?.id ?? currentContact?.pubkey,
         ]) ?? []
       ).filter(
         (m) => m.sent === 0 && !initialMessages.some((im) => im.id === m.id),
@@ -85,8 +79,8 @@ export function useMessagesQuery(username?: string, pubKeyOrID?: string) {
       const failedMessages = (
         queryClient.getQueryData<Message[]>([
           ChatQueries.MESSAGES,
-          username,
-          pubKeyOrID,
+          activeUsername,
+          currentChannel?.id ?? currentContact?.pubkey,
         ]) ?? []
       ).filter(
         (m) => m.sent === 2 && !initialMessages.some((im) => im.id === m.id),

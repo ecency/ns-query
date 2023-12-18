@@ -22,12 +22,9 @@ export function useResendMessage(
 ) {
   const queryClient = useQueryClient();
 
-  const { receiverPubKey } = useContext(ChatContext);
+  const { receiverPubKey, activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
-  const { data: messages } = useMessagesQuery(
-    currentChannel?.communityName ?? currentContact?.name,
-    currentChannel?.id ?? currentContact?.pubkey,
-  );
+  const { data: messages } = useMessagesQuery(currentContact, currentChannel);
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
     privateKey!!,
@@ -62,7 +59,7 @@ export function useResendMessage(
         queryClient.setQueryData(
           [
             ChatQueries.MESSAGES,
-            currentChannel?.communityName ?? currentContact?.name,
+            activeUsername,
             currentChannel?.id ?? currentContact?.pubkey,
           ],
           [
@@ -83,7 +80,7 @@ export function useResendMessage(
           queryClient.setQueryData(
             [
               ChatQueries.MESSAGES,
-              currentChannel?.communityName ?? currentContact?.name,
+              activeUsername,
               currentChannel?.id ?? currentContact?.pubkey,
             ],
             [

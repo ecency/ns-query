@@ -13,7 +13,6 @@ import { ChatQueries, useMessagesQuery } from "../queries";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { Kind } from "nostr-tools";
-import { isCommunity } from "../utils";
 
 export function useSendMessage(
   currentChannel?: Channel,
@@ -22,12 +21,9 @@ export function useSendMessage(
 ) {
   const queryClient = useQueryClient();
 
-  const { receiverPubKey } = useContext(ChatContext);
+  const { receiverPubKey, activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
-  const { data: messages } = useMessagesQuery(
-    currentChannel?.communityName ?? currentContact?.name,
-    currentChannel?.id ?? currentContact?.pubkey,
-  );
+  const { data: messages } = useMessagesQuery(currentContact, currentChannel);
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
     privateKey!!,
@@ -46,12 +42,6 @@ export function useSendMessage(
       if (!message || message.includes("Uploading")) {
         throw new Error(
           "[Chat][SendMessage] – empty message or has uploading file",
-        );
-      }
-
-      if (!currentChannel && isCommunity(currentContact?.name)) {
-        throw new Error(
-          "[Chat][SendMessage] – provided user is community but channel not found",
         );
       }
 
@@ -75,7 +65,7 @@ export function useSendMessage(
         queryClient.setQueryData(
           [
             ChatQueries.MESSAGES,
-            currentChannel?.communityName ?? currentContact?.name,
+            activeUsername,
             currentChannel?.id ?? currentContact?.pubkey,
           ],
           [...messages, message],
@@ -91,7 +81,7 @@ export function useSendMessage(
           queryClient.setQueryData(
             [
               ChatQueries.MESSAGES,
-              currentChannel?.communityName ?? currentContact?.name,
+              activeUsername,
               currentChannel?.id ?? currentContact?.pubkey,
             ],
             [...messages, message],
