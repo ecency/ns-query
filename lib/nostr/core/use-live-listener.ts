@@ -15,12 +15,12 @@ export function useLiveListener<DATA extends object>(
   const sinceRef = useRef<number>(Math.floor(new Date().getTime() / 1000));
 
   useEffect(() => {
-    if (!options.enabled) {
+    if (!options.enabled || filters.length === 0) {
       return;
     }
 
     run();
-  }, [options]);
+  }, [options, filters]);
 
   const run = () => {
     clearTimeout(timeoutRef.current);

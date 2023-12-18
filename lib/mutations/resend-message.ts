@@ -59,7 +59,7 @@ export function useResendMessage(
         queryClient.setQueryData(
           [
             ChatQueries.MESSAGES,
-            currentChannel?.communityName ?? currentContact?.name,
+            activeUsername,
             currentChannel?.id ?? currentContact?.pubkey,
           ],
           [
