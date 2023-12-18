@@ -36,6 +36,17 @@ export function useNostrPublishMutation(
     ),
   });
 
+  const waitUntilOneResolved = (promises: Promise<void>[]) =>
+    new Promise<void>((resolve) => {
+      if (promises.length === 0) {
+        resolve();
+        return;
+      }
+      for (const promise of promises) {
+        promise.then(() => resolve());
+      }
+    });
+
   return useMutation(
     key,
     ({ eventMetadata, tags }: Payload) =>
@@ -70,7 +81,9 @@ export function useNostrPublishMutation(
         onBeforeSend(signedEvent);
 
         try {
-          await Promise.all(pool?.publish(writeRelays, signedEvent) ?? []);
+          await waitUntilOneResolved(
+            pool?.publish(writeRelays, signedEvent) ?? [],
+          );
           resolve(signedEvent);
         } catch (e) {
           throw new PublishNostrError(

@@ -19,13 +19,13 @@ export function useLivePublicMessagesListener() {
   const { publicKey, privateKey } = useKeysQuery();
   const { data: channels } = useChannelsQuery();
 
-  useLiveListener<Message | null>(
+  useLiveListener<Message>(
     (channels ?? []).map((channel) => ({
       kinds: [Kind.ChannelMessage],
       "#e": [channel.id],
     })),
     (event) =>
-      convertEvent<Kind.ChannelMessage>(event, publicKey!!, privateKey!!),
+      convertEvent<Kind.ChannelMessage>(event, publicKey!!, privateKey!!)!!,
     async (message) => {
       if (!message) {
         return;
@@ -45,6 +45,12 @@ export function useLivePublicMessagesListener() {
           ...previousData,
           pages: [...previousData.pages],
         };
+
+        // Ignore duplicates
+        if (dump.pages[0].some((m) => m.id === message.id)) {
+          return;
+        }
+
         dump.pages[0] = [...dump.pages[0], message as PublicMessage];
         queryClient.setQueryData(
           [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
