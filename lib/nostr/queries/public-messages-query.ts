@@ -19,7 +19,7 @@ export function usePublicMessagesQuery(channel?: Channel) {
         .map((event) => convertEvent(event))
         .filter((message) => !!message) as Message[],
     {
-      enabled: !!channel,
+      enabled: !!channel?.id,
       initialData: { pages: [[]], pageParams: [] },
       getNextPageParam: (lastPage) => lastPage?.[lastPage?.length - 1]?.created,
     },

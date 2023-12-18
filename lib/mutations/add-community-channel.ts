@@ -40,6 +40,10 @@ export function useAddCommunityChannel(id: string | undefined) {
                   [ChatQueries.CHANNELS, activeUsername],
                   [...(channels ?? []), channel],
                 );
+                queryClient.invalidateQueries([
+                  ChatQueries.CHANNELS,
+                  activeUsername,
+                ]);
               }
 
               // Remove the community from left list

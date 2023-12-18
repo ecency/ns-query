@@ -1,13 +1,20 @@
-import {ChatQueries} from "./queries";
-import {Channel, PublicMessage, useKeysQuery, useNostrFetchQuery,} from "../nostr";
-import {Kind} from "nostr-tools";
-import {convertEvent} from "../nostr/utils/event-converter";
-import {useContext, useMemo} from "react";
-import {ChatContext} from "../chat-context-provider";
-import {useQuery} from "@tanstack/react-query";
+import { ChatQueries } from "./queries";
+import {
+  Channel,
+  PublicMessage,
+  useKeysQuery,
+  useNostrFetchQuery,
+} from "../nostr";
+import { Kind } from "nostr-tools";
+import { convertEvent } from "../nostr/utils/event-converter";
+import { useContext, useEffect, useMemo } from "react";
+import { ChatContext } from "../chat-context-provider";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useChannelsQuery() {
   const { activeUsername } = useContext(ChatContext);
+  const queryClient = useQueryClient();
+
   const { hasKeys, publicKey } = useKeysQuery();
 
   const { data: createdChannels } = useNostrFetchQuery<Channel[]>(
@@ -41,7 +48,12 @@ export function useChannelsQuery() {
   );
 
   const channelIds = useMemo(
-    () => Array.from(new Set(allChannelMessages?.map((message) => message.root) ?? []).values()),
+    () =>
+      Array.from(
+        new Set(
+          allChannelMessages?.map((message) => message.root) ?? [],
+        ).values(),
+      ),
     [allChannelMessages],
   );
   const { data: joinedChannels } = useNostrFetchQuery(
@@ -59,8 +71,15 @@ export function useChannelsQuery() {
     },
   );
 
-  return useQuery(
-    [ChatQueries.CHANNELS, activeUsername, createdChannels, joinedChannels],
-    () => [...(createdChannels ?? []), ...(joinedChannels ?? [])],
+  useEffect(() => {
+    queryClient.setQueryData(
+      [ChatQueries.CHANNELS, activeUsername],
+      [...(createdChannels ?? []), ...(joinedChannels ?? [])],
+    );
+    queryClient.invalidateQueries([ChatQueries.CHANNELS, activeUsername]);
+  }, [createdChannels, joinedChannels]);
+
+  return useQuery([ChatQueries.CHANNELS, activeUsername], () =>
+    queryClient.getQueryData<Channel[]>([ChatQueries.CHANNELS, activeUsername]),
   );
 }
