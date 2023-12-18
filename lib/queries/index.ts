@@ -5,3 +5,4 @@ export * from "./channels-query";
 export * from "./community-channel-query";
 export * from "./nostr-joined-community-team-query";
 export * from "./left-community-channels-query";
+export * from "./last-message-query";
