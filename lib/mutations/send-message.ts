@@ -61,15 +61,17 @@ export function useSendMessage(
     },
     {
       onSuccess: (message) => {
-        message.sent = 0;
-        queryClient.setQueryData(
-          [
-            ChatQueries.MESSAGES,
-            activeUsername,
-            currentChannel?.id ?? currentContact?.pubkey,
-          ],
-          [...messages, message],
-        );
+        if (message) {
+          message.sent = 0;
+          queryClient.setQueryData(
+            [
+              ChatQueries.MESSAGES,
+              activeUsername,
+              currentChannel?.id ?? currentContact?.pubkey,
+            ],
+            [...messages, message],
+          );
+        }
         onSuccess?.();
       },
       onError: async (error: PublishNostrError | Error) => {

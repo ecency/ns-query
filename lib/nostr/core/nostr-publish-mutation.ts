@@ -69,6 +69,7 @@ export function useNostrPublishMutation(
             tags,
           });
         } catch (e) {
+          console.error(e);
           signedEvent = null;
         }
         if (!signedEvent) {
