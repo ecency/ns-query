@@ -3,6 +3,8 @@ import { SimplePool } from "nostr-tools";
 import { NostrContext } from "./nostr-context";
 
 export const RELAYS: Record<string, { read: true; write: true }> = {
+    "wss://none.ecency.com": {read: true, write: true},
+    "wss://ntwo.ecency.com": {read: true, write: true},
   "wss://relay.lacosanostr.com": { read: true, write: true },
   "wss://nostrue.com": { read: true, write: true },
   "wss://relay.damus.io": { read: true, write: true },
