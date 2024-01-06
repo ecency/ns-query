@@ -26,6 +26,7 @@ export function usePublicMessagesQuery(channel?: Channel) {
       enabled: !!channel?.id,
       initialData: { pages: [[]], pageParams: [] },
       getNextPageParam: (lastPage) => lastPage?.[lastPage?.length - 1]?.created,
+      refetchOnMount: false,
     },
   );
 }

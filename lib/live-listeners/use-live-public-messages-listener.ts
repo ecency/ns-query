@@ -56,12 +56,6 @@ export function useLivePublicMessagesListener() {
           [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
           dump,
         );
-
-        await queryClient.invalidateQueries([
-          NostrQueries.PUBLIC_MESSAGES,
-          activeUsername,
-          channel.id,
-        ]);
         await queryClient.invalidateQueries([
           ChatQueries.MESSAGES,
           activeUsername,

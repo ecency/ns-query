@@ -18,18 +18,21 @@ export function useActiveUserSwitching() {
       activeUsername !== previousActiveUser ||
       previousPublicKey !== publicKey
     ) {
-      queryClient.setQueryData([NostrQueries.PUBLIC_MESSAGES], { pages: [] });
-      queryClient.setQueryData([NostrQueries.DIRECT_MESSAGES], { pages: [] });
-      queryClient.setQueryData([ChatQueries.LEFT_CHANNELS], []);
-      queryClient.setQueryData([ChatQueries.JOINED_CHANNELS], []);
-      queryClient.setQueryData([ChatQueries.DIRECT_CONTACTS], []);
-
       queryClient.invalidateQueries([NostrQueries.PUBLIC_MESSAGES]);
       queryClient.invalidateQueries([NostrQueries.DIRECT_MESSAGES]);
-      queryClient.invalidateQueries([ChatQueries.LEFT_CHANNELS]);
       queryClient.invalidateQueries([ChatQueries.MESSAGES]);
-      queryClient.invalidateQueries([ChatQueries.DIRECT_CONTACTS]);
-      queryClient.invalidateQueries([ChatQueries.JOINED_CHANNELS]);
+      queryClient.invalidateQueries([
+        ChatQueries.LEFT_CHANNELS,
+        activeUsername,
+      ]);
+      queryClient.invalidateQueries([
+        ChatQueries.DIRECT_CONTACTS,
+        activeUsername,
+      ]);
+      queryClient.invalidateQueries([
+        ChatQueries.JOINED_CHANNELS,
+        activeUsername,
+      ]);
     }
   }, [activeUsername, previousActiveUser, publicKey]);
 }

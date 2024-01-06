@@ -112,11 +112,6 @@ export function useLiveDirectMessagesListener() {
           dump,
         );
         await queryClient.invalidateQueries([
-          NostrQueries.DIRECT_MESSAGES,
-          activeUsername,
-          contact.pubkey,
-        ]);
-        await queryClient.invalidateQueries([
           ChatQueries.MESSAGES,
           activeUsername,
           contact.pubkey,

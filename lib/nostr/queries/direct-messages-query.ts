@@ -43,6 +43,7 @@ export function useDirectMessagesQuery(contact?: DirectContact) {
         !!contact?.pubkey && !!activeUsername && !!privateKey && !!publicKey,
       initialData: { pages: [[]], pageParams: [] },
       getNextPageParam: (lastPage) => lastPage?.[lastPage?.length - 1]?.created,
+      refetchOnMount: false,
     },
   );
 }
