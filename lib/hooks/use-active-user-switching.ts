@@ -21,6 +21,7 @@ export function useActiveUserSwitching() {
       queryClient.setQueryData([NostrQueries.PUBLIC_MESSAGES], { pages: [] });
       queryClient.setQueryData([NostrQueries.DIRECT_MESSAGES], { pages: [] });
       queryClient.setQueryData([ChatQueries.LEFT_CHANNELS], []);
+      queryClient.setQueryData([ChatQueries.JOINED_CHANNELS], []);
       queryClient.setQueryData([ChatQueries.DIRECT_CONTACTS], []);
 
       queryClient.invalidateQueries([NostrQueries.PUBLIC_MESSAGES]);
@@ -28,6 +29,7 @@ export function useActiveUserSwitching() {
       queryClient.invalidateQueries([ChatQueries.LEFT_CHANNELS]);
       queryClient.invalidateQueries([ChatQueries.MESSAGES]);
       queryClient.invalidateQueries([ChatQueries.DIRECT_CONTACTS]);
+      queryClient.invalidateQueries([ChatQueries.JOINED_CHANNELS]);
     }
   }, [activeUsername, previousActiveUser, publicKey]);
 }

@@ -23,6 +23,7 @@ export function useDirectContactsQuery() {
     {
       initialData: [],
       enabled: hasKeys,
+      refetchOnMount: false,
     },
   );
 }

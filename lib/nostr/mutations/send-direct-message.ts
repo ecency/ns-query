@@ -6,7 +6,7 @@ import { convertEvent } from "../utils/event-converter";
 
 export function useNostrSendDirectMessage(
   ownerPrivateKey: string,
-  destinationPublicKey: string,
+  destinationPublicKey?: string,
   parent?: string,
 ) {
   const { privateKey, publicKey } = useKeysQuery();
@@ -19,9 +19,9 @@ export function useNostrSendDirectMessage(
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
   return useMutation(["chats/send-direct-message"], async (message: string) => {
-    if (!publicKey || !privateKey) {
+    if (!publicKey || !privateKey || !destinationPublicKey) {
       throw new Error(
-        "[Chat][Nostr] – attempting to send direct message with no private and public key",
+        "[Chat][Nostr] – attempting to send direct message with no private, destination or public key",
       );
     }
 

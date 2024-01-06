@@ -7,14 +7,11 @@ import {
 } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
-import { useContext, useEffect } from "react";
+import { useContext, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useChannelsQuery() {
   const { activeUsername } = useContext(ChatContext);
-  const queryClient = useQueryClient();
-
   const { hasKeys, publicKey } = useKeysQuery();
 
   const { data: createdChannels } = useNostrFetchQuery<Channel[]>(
@@ -33,7 +30,7 @@ export function useChannelsQuery() {
   const { data: activeUserNostrProfiles } =
     useNostrGetUserProfileQuery(publicKey);
   const { data: joinedChannels } = useNostrFetchQuery(
-    [ChatQueries.JOINED_CHANNELS],
+    [ChatQueries.JOINED_CHANNELS, activeUsername],
     activeUserNostrProfiles?.[0]?.joinedChannels?.map((id) => ({
       kinds: [Kind.ChannelCreation],
       ids: [id],
@@ -44,18 +41,13 @@ export function useChannelsQuery() {
         .filter((channel) => !!channel) as Channel[],
     {
       enabled: (activeUserNostrProfiles?.[0]?.joinedChannels?.length ?? 0) > 0,
+      refetchOnMount: false,
     },
   );
-
-  useEffect(() => {
-    queryClient.setQueryData(
-      [ChatQueries.CHANNELS, activeUsername],
-      [...(createdChannels ?? []), ...(joinedChannels ?? [])],
-    );
-    queryClient.invalidateQueries([ChatQueries.CHANNELS, activeUsername]);
-  }, [createdChannels, joinedChannels]);
-
-  return useQuery([ChatQueries.CHANNELS, activeUsername], () =>
-    queryClient.getQueryData<Channel[]>([ChatQueries.CHANNELS, activeUsername]),
+  return useMemo(
+    () => ({
+      data: [...(createdChannels ?? []), ...(joinedChannels ?? [])],
+    }),
+    [createdChannels, joinedChannels],
   );
 }
