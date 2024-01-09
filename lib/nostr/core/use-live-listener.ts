@@ -8,6 +8,7 @@ export function useLiveListener<DATA extends object>(
   emitter: (data: DATA) => void,
   options: {
     enabled: boolean;
+    disabledSince?: boolean;
   },
 ) {
   const { pool, readRelays } = useContext(NostrContext);
@@ -29,7 +30,7 @@ export function useLiveListener<DATA extends object>(
       const nextFilters = sinceRef.current
         ? filters.map((f) => ({
             ...f,
-            since: sinceRef.current,
+            ...(options.disabledSince ? {} : { since: sinceRef.current }),
           }))
         : filters;
       const subInfo = pool?.sub(readRelays, nextFilters);
