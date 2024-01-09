@@ -24,7 +24,7 @@ export function useLiveDirectMessagesListener() {
 
   const { mutateAsync: addDirectContact } = useAddDirectContact();
   const { mutateAsync: getAccountMetadata } = useNostrFetchMutation(
-    ["chats/update-nostr-profile"],
+    ["chats/nostr-get-user-profile"],
     [],
   );
 
@@ -32,7 +32,7 @@ export function useLiveDirectMessagesListener() {
     const data = await getAccountMetadata([
       {
         kinds: [Kind.Metadata],
-        "#p": [pubkey],
+        authors: [pubkey],
       },
     ]);
     if (data.length > 0) {
@@ -95,33 +95,26 @@ export function useLiveDirectMessagesListener() {
         InfiniteData<DirectMessage[]>
       >([NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey]);
 
-      if (previousData) {
-        const dump: InfiniteData<DirectMessage[]> = {
-          ...previousData,
-          pages: [...previousData.pages],
-        };
+      const dump: InfiniteData<DirectMessage[]> = {
+        pages: [...(previousData?.pages ?? [])],
+        pageParams: [...(previousData?.pageParams ?? [])],
+      };
 
-        // Ignore duplicates
-        if (dump.pages[0].some((m) => m.id === message.id)) {
-          return;
-        }
-        dump.pages[0] = [...dump.pages[0], directMessage];
-
-        queryClient.setQueryData(
-          [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
-          dump,
-        );
-        await queryClient.invalidateQueries([
-          ChatQueries.MESSAGES,
-          activeUsername,
-          contact.pubkey,
-        ]);
+      // Ignore duplicates
+      if (dump.pages[0].some((m) => m.id === message.id)) {
+        return;
       }
+      dump.pages[0] = [...dump.pages[0], directMessage];
 
       queryClient.setQueryData(
-        [ChatQueries.LAST_MESSAGE, activeUsername, contact.pubkey],
-        message,
+        [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
+        dump,
       );
+      await queryClient.invalidateQueries([
+        ChatQueries.MESSAGES,
+        activeUsername,
+        contact.pubkey,
+      ]);
     },
     { enabled: !!publicKey && !!privateKey },
   );
