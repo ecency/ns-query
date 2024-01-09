@@ -53,7 +53,7 @@ export function useAddCommunityChannel(channel?: Channel) {
         ["chats/nostr-get-user-profile", publicKey],
       ]);
       await queryClient.invalidateQueries([
-        ChatQueries.CHANNELS,
+        ChatQueries.JOINED_CHANNELS,
         activeUsername,
       ]);
 

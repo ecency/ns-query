@@ -4,7 +4,7 @@ import {
   useDirectMessagesQuery,
   usePublicMessagesQuery,
 } from "../nostr";
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatQueries } from "./queries";
@@ -16,8 +16,18 @@ export function useLastMessageQuery(
   const { activeUsername } = useContext(ChatContext);
   const queryClient = useQueryClient();
 
-  const { data: lastDirectMessages } = useDirectMessagesQuery(contact);
-  const { data: lastPublicMessages } = usePublicMessagesQuery(channel);
+  const { data: lastDirectMessages, refetch: refetchDirectMessages } =
+    useDirectMessagesQuery(contact);
+  const { data: lastPublicMessages, refetch: refetchPublicMessages } =
+    usePublicMessagesQuery(channel);
+
+  useEffect(() => {
+    refetchDirectMessages();
+  }, [contact]);
+
+  useEffect(() => {
+    refetchPublicMessages();
+  }, [channel]);
 
   const lastDirectMessage = useMemo(() => {
     const lastDirectMessage = lastDirectMessages?.pages?.[0]?.[0];

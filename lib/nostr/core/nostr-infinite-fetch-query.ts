@@ -29,7 +29,7 @@ export function useNostrInfiniteFetchQuery<DATA>(
         publicKey!!,
         filters.map((f) => ({
           ...f,
-          ...(pageParam ? { since: pageParam } : {}),
+          ...(pageParam ? { until: pageParam - 1 } : {}),
         })),
       );
       return dataResolver(events);

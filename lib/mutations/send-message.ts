@@ -21,13 +21,13 @@ export function useSendMessage(
 ) {
   const queryClient = useQueryClient();
 
-  const { receiverPubKey, activeUsername } = useContext(ChatContext);
+  const { activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
   const { data: messages } = useMessagesQuery(currentContact, currentChannel);
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
     privateKey!!,
-    receiverPubKey,
+    currentContact?.pubkey,
     undefined,
   );
   const { mutateAsync: sendPublicMessage } = useNostrSendPublicMessage(
