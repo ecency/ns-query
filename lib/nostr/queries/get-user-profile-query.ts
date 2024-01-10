@@ -24,7 +24,7 @@ export function useNostrGetUserProfileQuery(pubKey?: string | null) {
 
 export function useNostrGetUserProfilesQuery(pubKeys: string[]) {
   return useNostrFetchQuery(
-    ["chats/nostr-get-user-profile", pubKeys.join("")],
+    ["chats/nostr-get-user-profile", pubKeys],
     pubKeys.map((user) => ({
       kinds: [Kind.Metadata],
       authors: [user],
@@ -36,6 +36,7 @@ export function useNostrGetUserProfilesQuery(pubKeys: string[]) {
     {
       initialData: [],
       refetchOnMount: false,
+      enabled: pubKeys.length > 0,
     },
   );
 }
