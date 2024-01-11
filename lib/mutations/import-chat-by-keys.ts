@@ -6,23 +6,27 @@ import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { UploadKeys } from "../types";
 import { ChatContext } from "../chat-context-provider";
+import { useSaveKeys } from "../api";
 
 interface Payload {
   ecencyChatKey: string;
   pin: string;
 }
 
-export function useImportChatByKeys(
-  uploadChatKeys: UploadKeys,
-  onSuccess?: () => void,
-) {
+export function useImportChatByKeys(onSuccess?: () => void) {
   const queryClient = useQueryClient();
   const { activeUsername, activeUserData } = useContext(ChatContext);
 
+  const { mutateAsync: uploadChatKeys } = useSaveKeys();
   const { mutateAsync: uploadKeys } = useMutation(
     ["chats/upload-public-key"],
     async (keys: Parameters<UploadKeys>[1]) =>
-      uploadChatKeys(activeUserData!!, keys),
+      uploadChatKeys({
+        pubkey: keys.pub,
+        iv: keys.iv.toString("base64"),
+        key: keys.priv,
+        meta: "",
+      }),
   );
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],

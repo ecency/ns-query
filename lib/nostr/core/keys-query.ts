@@ -1,23 +1,27 @@
 import { useQueries } from "@tanstack/react-query";
-import {
-  EncryptionTools,
-  getUserChatPrivateKey,
-  getUserChatPublicKey,
-} from "../../utils";
+import { EncryptionTools } from "../../utils";
 import { useContext, useMemo } from "react";
 import { NostrQueries } from "../queries";
 import { ChatContext } from "../../chat-context-provider";
+import { useGetKeysQuery } from "../../api";
+import { useMount } from "react-use";
 
 export function useKeysQuery() {
   const { activeUsername, activeUserData } = useContext(ChatContext);
+  const getKeysQuery = useGetKeysQuery();
+
+  useMount(() => {
+    if (!getKeysQuery.isFetched) {
+      getKeysQuery.refetch();
+    }
+  });
 
   const [{ data: publicKey }, { data: privateKey }, { data: iv }] = useQueries({
     queries: [
       {
         queryKey: [NostrQueries.PUBLIC_KEY, activeUsername],
-        queryFn: async () => getUserChatPublicKey(activeUserData!!),
-        enabled: !!activeUserData,
-        initialData: null,
+        queryFn: async () => getKeysQuery.data!.pubkey,
+        enabled: !!activeUserData && !!getKeysQuery.data,
       },
       {
         queryKey: [NostrQueries.PRIVATE_KEY, activeUsername],
@@ -28,7 +32,7 @@ export function useKeysQuery() {
             return null;
           }
 
-          const { key, iv } = getUserChatPrivateKey(activeUserData!!);
+          const { key, iv } = getKeysQuery.data!;
           if (key && pin && iv) {
             try {
               return EncryptionTools.decrypt(
@@ -43,14 +47,13 @@ export function useKeysQuery() {
 
           return null;
         },
-        enabled: !!activeUserData && !!activeUsername,
+        enabled: !!activeUserData && !!activeUsername && !!getKeysQuery.data,
         initialData: null,
       },
       {
         queryKey: [NostrQueries.ACCOUNT_IV, activeUsername],
-        queryFn: async () => getUserChatPrivateKey(activeUserData!!).iv,
-        enabled: !!activeUserData,
-        initialData: null,
+        queryFn: async () => getKeysQuery.data!.iv,
+        enabled: !!activeUserData && !!getKeysQuery.data,
       },
     ],
   });

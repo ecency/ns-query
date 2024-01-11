@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AccountData, useNostrPublishMutation } from "../nostr";
-import { ChatQueries, useNostrJoinedCommunityTeamQuery } from "../queries";
+import { AccountData, useKeysQuery, useNostrPublishMutation } from "../nostr";
+import { ChatQueries, ROLES } from "../queries";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { KindOfCommunity } from "../types";
@@ -21,10 +21,8 @@ export function useCreateCommunityChat(
   const queryClient = useQueryClient();
   const { activeUsername } = useContext(ChatContext);
 
-  const { data: communityTeam } = useNostrJoinedCommunityTeamQuery(
-    community,
-    communityAccountData,
-  );
+  const { publicKey } = useKeysQuery();
+
   const { mutateAsync: createChannel } = useNostrPublishMutation(
     ["chats/nostr-create-channel"],
     Kind.ChannelCreation,
@@ -42,7 +40,9 @@ export function useCreateCommunityChat(
           about: community.description,
           communityName: community.name,
           picture: "",
-          communityModerators: communityTeam,
+          communityModerators: [
+            { pubkey: publicKey!, name: activeUsername!, role: ROLES.OWNER },
+          ],
           hiddenMessageIds: [],
           removedUserIds: [],
         },
