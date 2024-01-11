@@ -42,7 +42,8 @@ export function useDirectMessagesQuery(contact?: DirectContact) {
       enabled:
         !!contact?.pubkey && !!activeUsername && !!privateKey && !!publicKey,
       initialData: { pages: [[]], pageParams: [] },
-      getNextPageParam: (lastPage) => lastPage?.[0]?.created,
+      getNextPageParam: (lastPage) =>
+        lastPage?.sort((a, b) => a.created - b.created)?.[0]?.created,
       refetchOnMount: false,
     },
   );

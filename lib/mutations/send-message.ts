@@ -46,7 +46,7 @@ export function useSendMessage(
       }
 
       // Add user to direct contacts if it's not there yet
-      // E.g. if user opened chat room directly from the address bar
+      // E.g. if user opened chat room directly from search bar
       if (currentContact) {
         addDirectContact(currentContact);
       }

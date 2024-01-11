@@ -3,13 +3,17 @@ import { findTagValue, isSha256 } from "../nostr/utils";
 import { ChatQueries } from "./queries";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { Kind } from "nostr-tools";
+import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 /**
  * Fetch custom kind of event which stores the left channels
  */
 export function useLeftCommunityChannelsQuery() {
+  const { activeUsername } = useContext(ChatContext);
+
   return useNostrFetchQuery<string[]>(
-    [ChatQueries.LEFT_CHANNELS],
+    [ChatQueries.LEFT_CHANNELS, activeUsername],
     [30078 as Kind],
     (events) => {
       if (events.length === 0) {

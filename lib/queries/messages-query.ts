@@ -5,9 +5,7 @@ import {
   DirectContact,
   Message,
   NostrQueries,
-  useDirectMessagesQuery,
   useKeysQuery,
-  usePublicMessagesQuery,
 } from "../nostr";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
@@ -25,9 +23,6 @@ export function useMessagesQuery(
   const queryClient = useQueryClient();
 
   const { hasKeys } = useKeysQuery();
-
-  useDirectMessagesQuery(currentContact);
-  usePublicMessagesQuery(currentChannel);
 
   return useQuery<Message[]>(
     [
