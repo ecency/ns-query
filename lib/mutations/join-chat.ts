@@ -14,12 +14,15 @@ const crypto = require("crypto");
  * This hook manages the process of joining a chat, resetting chat state, and uploading
  * a public key for secure communication.
  *
- * @param uploadChatKeys – Special function for uploading generated keys to user
- * @param onSuccess - A callback function to be called upon successful completion of chat join.
+ * @param onSuccess A callback function to be called upon successful completion of chat join.
+ * @param meta A metaobject which could contain any information related to the Nostr keys record
  *
  * @returns A function from the `useMutation` hook, which can be used to initiate the chat join process.
  */
-export function useJoinChat(onSuccess?: () => void) {
+export function useJoinChat(
+  onSuccess?: () => void,
+  meta?: Record<string, unknown>,
+) {
   const queryClient = useQueryClient();
   const { activeUsername } = useContext(ChatContext);
 
@@ -46,7 +49,7 @@ export function useJoinChat(onSuccess?: () => void) {
         pubkey: keys.pub,
         key: encryptedKey,
         iv: initialVector.toString("base64"),
-        meta: "",
+        meta: meta ? JSON.stringify(meta) : "",
       });
 
       queryClient.setQueryData(
