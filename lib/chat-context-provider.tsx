@@ -15,11 +15,15 @@ interface Context {
   setReceiverPubKey: (key: string) => void;
   activeUsername: string | undefined;
   activeUserData: AccountData | undefined;
+  privateApiHost: string;
+  ecencyAccessToken: string;
 }
 
 interface Props {
   activeUsername?: string;
   activeUserData?: AccountData;
+  privateApiHost: string;
+  ecencyAccessToken: string;
 }
 
 export const ChatContext = createContext<Context>({
@@ -28,6 +32,8 @@ export const ChatContext = createContext<Context>({
   hasUserJoinedChat: false,
   activeUsername: undefined,
   activeUserData: undefined,
+  privateApiHost: "",
+  ecencyAccessToken: "",
   setRevealPrivateKey: () => {},
   setReceiverPubKey: () => {},
 });
@@ -40,6 +46,10 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
 
   const [activeUsername, setActiveUsername] = useState<string>();
   const [activeUserData, setActiveUserData] = useState<AccountData>();
+  const [ecencyAccessToken, setEcencyAccessToken] = useState(
+    props.ecencyAccessToken,
+  );
+  const [privateApiHost, setPrivateApiHost] = useState(props.privateApiHost);
 
   useEffect(() => {
     setActiveUsername(props.activeUsername);
@@ -59,6 +69,8 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
         setReceiverPubKey,
         activeUsername,
         activeUserData,
+        privateApiHost,
+        ecencyAccessToken,
       }}
     >
       <NostrProvider>

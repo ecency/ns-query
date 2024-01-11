@@ -3,8 +3,8 @@ import { createNoStrAccount, EncryptionTools } from "../utils";
 import { NostrQueries, useNostrPublishMutation } from "../nostr";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
-import { UploadKeys, UploadKeysPayload } from "../types";
 import { ChatContext } from "../chat-context-provider";
+import { useSaveKeys } from "../api";
 
 const crypto = require("crypto");
 
@@ -14,27 +14,24 @@ const crypto = require("crypto");
  * This hook manages the process of joining a chat, resetting chat state, and uploading
  * a public key for secure communication.
  *
- * @param uploadChatKeys – Special function for uploading generated keys to user
- * @param onSuccess - A callback function to be called upon successful completion of chat join.
+ * @param onSuccess A callback function to be called upon successful completion of chat join.
+ * @param meta A metaobject which could contain any information related to the Nostr keys record
  *
  * @returns A function from the `useMutation` hook, which can be used to initiate the chat join process.
  */
 export function useJoinChat(
-  uploadChatKeys: UploadKeys,
   onSuccess?: () => void,
+  meta?: Record<string, unknown>,
 ) {
   const queryClient = useQueryClient();
-  const { activeUsername, activeUserData } = useContext(ChatContext);
+  const { activeUsername } = useContext(ChatContext);
 
-  const { mutateAsync: uploadKeys } = useMutation(
-    ["chats/upload-public-key"],
-    async (keys: UploadKeysPayload) => uploadChatKeys(activeUserData!!, keys),
-  );
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
     Kind.Metadata,
     () => {},
   );
+  const { mutateAsync: uploadKeys } = useSaveKeys();
 
   return useMutation(
     ["chat-join-chat"],
@@ -49,9 +46,10 @@ export function useJoinChat(
         initialVector,
       );
       await uploadKeys({
-        pub: keys.pub,
-        priv: encryptedKey,
-        iv: initialVector,
+        pubkey: keys.pub,
+        key: encryptedKey,
+        iv: initialVector.toString("base64"),
+        meta: meta ?? {},
       });
 
       queryClient.setQueryData(
