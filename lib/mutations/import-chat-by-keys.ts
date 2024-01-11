@@ -13,7 +13,10 @@ interface Payload {
   pin: string;
 }
 
-export function useImportChatByKeys(onSuccess?: () => void) {
+export function useImportChatByKeys(
+  onSuccess?: () => void,
+  meta?: Record<string, unknown>,
+) {
   const queryClient = useQueryClient();
   const { activeUsername, activeUserData } = useContext(ChatContext);
 
@@ -25,7 +28,7 @@ export function useImportChatByKeys(onSuccess?: () => void) {
         pubkey: keys.pub,
         iv: keys.iv.toString("base64"),
         key: keys.priv,
-        meta: "",
+        meta: meta ?? {},
       }),
   );
   const { mutateAsync: updateProfile } = useNostrPublishMutation(

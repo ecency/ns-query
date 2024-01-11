@@ -49,7 +49,7 @@ export function useJoinChat(
         pubkey: keys.pub,
         key: encryptedKey,
         iv: initialVector.toString("base64"),
-        meta: meta ? JSON.stringify(meta) : "",
+        meta: meta ?? {},
       });
 
       queryClient.setQueryData(
