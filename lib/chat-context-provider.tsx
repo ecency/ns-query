@@ -52,6 +52,10 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
   const [privateApiHost, setPrivateApiHost] = useState(props.privateApiHost);
 
   useEffect(() => {
+    setEcencyAccessToken(props.ecencyAccessToken);
+  }, [props.ecencyAccessToken]);
+
+  useEffect(() => {
     setActiveUsername(props.activeUsername);
   }, [props.activeUsername]);
 
