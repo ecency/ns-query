@@ -7,7 +7,7 @@ export function useGetPublicKeysQuery(username?: string) {
   const { privateApiHost } = useContext(ChatContext);
 
   return useQuery(
-    ["private-api", "get-keys", username],
+    ["private-api", "get-pub-keys", username],
     () =>
       axios
         .get<{ pubkey: string }>(
