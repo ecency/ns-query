@@ -9,20 +9,22 @@ function convertEventToDirectContacts(events: Event[]) {
   // note: events could be duplicated
   const profileEvent = events.find((event) => event.kind === Kind.Contacts);
   if (profileEvent) {
-    return profileEvent.tags.map(([p, pubkey, relay, name]) => {
-      if (p === "p") {
-        return {
-          pubkey,
-          name,
-        };
-      } else {
-        // This workaround should be removed after release because it fixes old behavior
-        return {
-          pubkey: p,
-          name: pubkey,
-        };
-      }
-    });
+    const contacts: DirectContact[] = profileEvent.tags
+      .filter(([tag]) => tag === "p")
+      .map(([_, pubkey, __, name]) => ({
+        pubkey,
+        name,
+      }));
+
+    profileEvent.tags
+      .filter(([tag]) => tag === "unread")
+      .forEach(([_, pubkey, value]) => {
+        const contactIndex = contacts.findIndex((c) => c.pubkey === pubkey);
+        if (contactIndex > -1) {
+          contacts[contactIndex].unread = +value;
+        }
+      });
+    return contacts;
   }
   return [];
 }
@@ -43,6 +45,7 @@ export function useOriginalDirectContactsQuery() {
       initialData: [],
       enabled: hasKeys,
       refetchOnMount: false,
+      refetchInterval: 30000,
     },
   );
 }
@@ -59,6 +62,7 @@ export function useDirectContactsQuery() {
       initialData: [],
       enabled: hasKeys,
       refetchOnMount: false,
+      select: (data) => data.sort((a, b) => (a.unread ? -1 : 1)),
     },
   );
 }

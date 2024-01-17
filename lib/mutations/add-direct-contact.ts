@@ -18,6 +18,7 @@ export function useAddDirectContact() {
   return useMutation(
     ["chats/add-direct-contact"],
     async (contact: DirectContact) => {
+      console.debug("[ns-query] Attempting adding direct contact", contact);
       const directContacts =
         queryClient.getQueryData<DirectContact[]>([
           ChatQueries.ORIGINAL_DIRECT_CONTACTS,
@@ -26,21 +27,31 @@ export function useAddDirectContact() {
       const hasInDirectContactsAlready = directContacts.some(
         (c) => c.name === contact.name && c.pubkey === contact.pubkey,
       );
+
       if (!hasInDirectContactsAlready) {
+        const contactTags = (directContacts ?? []).map((c) => [
+          "p",
+          c.pubkey,
+          "",
+          c.name,
+        ]);
+        const unreadTags = (directContacts ?? [])
+          .filter((c) => contact.pubkey !== c.pubkey)
+          .map((c) => ["unread", c.pubkey, c.unread?.toString() ?? "0"]);
+
         await publishDirectContact({
           tags: [
-            ...(directContacts ?? []).map((contact) => [
-              "p",
-              contact.pubkey,
-              "",
-              contact.name,
-            ]),
+            ...contactTags,
+            ...unreadTags,
             ["p", contact.pubkey, "", contact.name],
+            ["unread", contact.pubkey, contact.unread?.toString() ?? "0"],
           ],
           eventMetadata: "",
         });
-
+        console.debug("[ns-query] Added direct contact to list", contact);
         return contact;
+      } else {
+        console.debug("[ns-query] Direct contact exists already", contact);
       }
       return;
     },

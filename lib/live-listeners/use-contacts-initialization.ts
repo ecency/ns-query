@@ -6,8 +6,8 @@ import {
   useNostrGetUserProfilesQuery,
 } from "../nostr";
 import { Kind } from "nostr-tools";
-import { ChatQueries } from "../queries";
-import { useContext, useEffect } from "react";
+import { ChatQueries, useOriginalDirectContactsQuery } from "../queries";
+import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../chat-context-provider";
 
 /**
@@ -24,6 +24,11 @@ export function useContactsInitialization() {
   const { publicKey } = useKeysQuery();
   const { activeUsername } = useContext(ChatContext);
 
+  // Uses for explicitly checking of fetching status because react-query has isSuccess by default since query has default value
+  const [isOriginalDirectContactsFetched, setIsOriginalDirectContactsFetched] =
+    useState(false);
+
+  const originalDirectContactsQuery = useOriginalDirectContactsQuery();
   const { data: nonDirectContactsKeys } = useNostrFetchQuery<string[]>(
     [ChatQueries.NON_DIRECT_CONTACTS, activeUsername],
     [
@@ -33,7 +38,11 @@ export function useContactsInitialization() {
       },
     ],
     (events) => events.map((event) => event.pubkey),
-    { enabled: !!publicKey, initialData: [] },
+    {
+      enabled:
+        !!publicKey && (originalDirectContactsQuery.data?.length ?? 0) > 0,
+      initialData: [],
+    },
   );
   const {
     data: nonDirectContactsProfiles,
@@ -42,20 +51,45 @@ export function useContactsInitialization() {
   const { mutateAsync: addDirectContact } = useAddDirectContact();
 
   useEffect(() => {
-    if ((nonDirectContactsKeys ?? []).length > 0) {
+    const notInDirectContactList = (nonDirectContactsKeys ?? []).filter(
+      (key) =>
+        originalDirectContactsQuery.data?.every((dc) => dc.pubkey !== key),
+    );
+    if (notInDirectContactList.length > 0 && isOriginalDirectContactsFetched) {
+      console.debug(
+        "[ns-query] Direct contacts are",
+        originalDirectContactsQuery.data,
+      );
+      console.debug(
+        "[ns-query] Non-direct contacts found",
+        notInDirectContactList,
+      );
       fetchNonDirectContactsProfiles();
     }
-  }, [nonDirectContactsKeys]);
+  }, [
+    nonDirectContactsKeys,
+    originalDirectContactsQuery.data,
+    isOriginalDirectContactsFetched,
+  ]);
 
   useEffect(() => {
-    addContacts(nonDirectContactsProfiles ?? []);
+    if (nonDirectContactsProfiles && nonDirectContactsProfiles.length > 0) {
+      addContacts(nonDirectContactsProfiles);
+    }
   }, [nonDirectContactsProfiles]);
 
   const addContacts = async (profiles: Profile[]) => {
+    console.debug(
+      "[ns-query] Found non-direct contacts Nostr profiles",
+      profiles,
+    );
     for (const profile of profiles) {
+      console.debug("[ns-query] Adding non-direct contact", profile);
+
       await addDirectContact({
         pubkey: profile.creator,
         name: profile.name,
+        unread: 1,
       });
     }
   };
