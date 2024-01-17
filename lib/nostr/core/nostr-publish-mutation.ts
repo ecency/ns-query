@@ -87,6 +87,7 @@ export function useNostrPublishMutation(
           );
           resolve(signedEvent);
         } catch (e) {
+          console.debug("[ns-query] Failed to publish event", signedEvent);
           throw new PublishNostrError(
             "[Chat][Nostr] – failed to publish event (kind: " +
               signedEvent!!.kind,
