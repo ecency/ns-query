@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 
-export function useUpdateDirectContactsUnreadCount() {
+export function useUpdateDirectContactsLastSeenDate() {
   const queryClient = useQueryClient();
   const { activeUsername } = useContext(ChatContext);
 
@@ -16,17 +16,23 @@ export function useUpdateDirectContactsUnreadCount() {
   );
 
   return useMutation(
-    ["chats/nostr-update-direct-contacts-unread-count"],
-    async ({ contact, unread }: { contact: DirectContact; unread: number }) => {
+    ["chats/nostr-update-direct-contacts-last-seen-date"],
+    async ({
+      contact,
+      lastSeenDate,
+    }: {
+      contact: DirectContact;
+      lastSeenDate: Date;
+    }) => {
       const directContacts =
         queryClient.getQueryData<DirectContact[]>([
           ChatQueries.ORIGINAL_DIRECT_CONTACTS,
           activeUsername,
         ]) ?? [];
       console.debug(
-        "[ns-query] Updating direct contact unread count",
+        "[ns-query] Updating direct contact last seen date",
         contact,
-        directContacts,
+        lastSeenDate,
       );
 
       const contactTags = directContacts.map((c) => [
@@ -35,20 +41,24 @@ export function useUpdateDirectContactsUnreadCount() {
         "",
         c.name,
       ]);
-      const unreadTags = directContacts
+      const lastSeenTags = directContacts
         .filter((c) => contact.pubkey !== c.pubkey)
-        .map((c) => ["unread", c.pubkey, c.unread?.toString() ?? "0"]);
+        .map((c) => [
+          "lastSeenDate",
+          c.pubkey,
+          c.lastSeenDate?.getTime().toString() ?? "",
+        ]);
 
       await publishDirectContact({
         tags: [
           ...contactTags,
-          ...unreadTags,
-          ["unread", contact.pubkey, unread.toString()],
+          ...lastSeenTags,
+          ["lastSeenDate", contact.pubkey, lastSeenDate.getTime().toString()],
         ],
         eventMetadata: "",
       });
 
-      contact.unread = unread;
+      contact.lastSeenDate = lastSeenDate;
       return contact;
     },
     {

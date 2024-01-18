@@ -35,16 +35,24 @@ export function useAddDirectContact() {
           "",
           c.name,
         ]);
-        const unreadTags = (directContacts ?? [])
+        const lastSeenTags = (directContacts ?? [])
           .filter((c) => contact.pubkey !== c.pubkey)
-          .map((c) => ["unread", c.pubkey, c.unread?.toString() ?? "0"]);
+          .map((c) => [
+            "lastSeenDate",
+            c.pubkey,
+            c.lastSeenDate?.getTime().toString() ?? "",
+          ]);
 
         await publishDirectContact({
           tags: [
             ...contactTags,
-            ...unreadTags,
+            ...lastSeenTags,
             ["p", contact.pubkey, "", contact.name],
-            ["unread", contact.pubkey, contact.unread?.toString() ?? "0"],
+            [
+              "lastSeenDate",
+              contact.pubkey,
+              contact.lastSeenDate?.getTime().toString() ?? "",
+            ],
           ],
           eventMetadata: "",
         });

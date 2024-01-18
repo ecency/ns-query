@@ -3,6 +3,7 @@ import { DirectContact, useKeysQuery, useNostrFetchQuery } from "../nostr";
 import { Event, Kind } from "nostr-tools";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
+import { isAfter } from "date-fns";
 
 function convertEventToDirectContacts(events: Event[]) {
   // Get first event with profile info
@@ -17,11 +18,11 @@ function convertEventToDirectContacts(events: Event[]) {
       }));
 
     profileEvent.tags
-      .filter(([tag]) => tag === "unread")
+      .filter(([tag]) => tag === "lastSeenDate")
       .forEach(([_, pubkey, value]) => {
         const contactIndex = contacts.findIndex((c) => c.pubkey === pubkey);
         if (contactIndex > -1) {
-          contacts[contactIndex].unread = +value;
+          contacts[contactIndex].lastSeenDate = new Date(+value);
         }
       });
     return contacts;
@@ -62,7 +63,17 @@ export function useDirectContactsQuery() {
       initialData: [],
       enabled: hasKeys,
       refetchOnMount: false,
-      select: (data) => data.sort((a, b) => (a.unread ? -1 : 1)),
+      select: (data) =>
+        data.sort((a, b) => {
+          if (
+            a.lastSeenDate instanceof Date &&
+            b.lastSeenDate instanceof Date &&
+            isAfter(a.lastSeenDate, b.lastSeenDate)
+          ) {
+            return -1;
+          }
+          return 0;
+        }),
     },
   );
 }

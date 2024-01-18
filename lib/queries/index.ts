@@ -8,3 +8,4 @@ export * from "./left-community-channels-query";
 export * from "./last-message-query";
 export * from "./created-channels-query";
 export * from "./joined-channels-query";
+export * from "./unread-count-query";

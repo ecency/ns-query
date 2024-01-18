@@ -10,10 +10,7 @@ import {
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import {
-  useAddDirectContact,
-  useUpdateDirectContactsUnreadCount,
-} from "../mutations";
+import { useAddDirectContact } from "../mutations";
 import { ChatQueries } from "../queries";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
@@ -30,8 +27,6 @@ export function useLiveDirectMessagesListener() {
     ["chats/nostr-get-user-profile"],
     [],
   );
-  const { mutateAsync: updateDirectContactUnreadCount } =
-    useUpdateDirectContactsUnreadCount();
 
   const addContact = async (pubkey: string) => {
     const data = await getAccountMetadata([
@@ -41,10 +36,9 @@ export function useLiveDirectMessagesListener() {
       },
     ]);
     if (data.length > 0) {
-      const nextContact = {
+      const nextContact: DirectContact = {
         pubkey,
         name: JSON.parse(data[0]?.content)?.name ?? "",
-        unread: 1,
       };
       await addDirectContact(nextContact);
       return nextContact;
@@ -123,18 +117,6 @@ export function useLiveDirectMessagesListener() {
         activeUsername,
         contact.pubkey,
       ]);
-
-      // Update unread count
-      if (message.creator !== publicKey) {
-        console.debug(
-          "[ns-query] Updating unread count from live listener",
-          contact,
-        );
-        await updateDirectContactUnreadCount({
-          contact,
-          unread: (contact.unread ?? 0) + 1,
-        });
-      }
     },
     { enabled: !!publicKey && !!privateKey },
   );
