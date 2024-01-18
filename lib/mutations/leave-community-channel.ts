@@ -1,6 +1,6 @@
 import { useUpdateLeftChannels } from "../nostr";
 import { useMutation } from "@tanstack/react-query";
-import { useLeftCommunityChannelsQuery } from "../queries/left-community-channels-query";
+import { useLeftCommunityChannelsQuery } from "../queries";
 
 export function useLeaveCommunityChannel(onSuccess?: () => void) {
   const { data: leftCommunityChannelsIds } = useLeftCommunityChannelsQuery();
@@ -10,11 +10,14 @@ export function useLeaveCommunityChannel(onSuccess?: () => void) {
     updateLeftChannels(
       {
         tags: [["d", "left-channel-list"]],
-        eventMetadata: JSON.stringify([...(leftCommunityChannelsIds ?? []), name])
+        eventMetadata: JSON.stringify([
+          ...(leftCommunityChannelsIds ?? []),
+          name,
+        ]),
       },
       {
-        onSuccess
-      }
-    )
+        onSuccess,
+      },
+    ),
   );
 }

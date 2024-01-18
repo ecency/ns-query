@@ -89,7 +89,6 @@ export function useContactsInitialization() {
       await addDirectContact({
         pubkey: profile.creator,
         name: profile.name,
-        unread: 1,
       });
     }
   };

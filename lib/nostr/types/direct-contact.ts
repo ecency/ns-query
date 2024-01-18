@@ -1,1 +1,5 @@
-export type DirectContact = { name: string; pubkey: string; unread?: number };
+export type DirectContact = {
+  name: string;
+  pubkey: string;
+  lastSeenDate?: Date;
+};
