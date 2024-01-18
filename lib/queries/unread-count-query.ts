@@ -1,4 +1,4 @@
-import { Channel, DirectContact } from "../nostr";
+import { Channel, DirectContact, useKeysQuery } from "../nostr";
 import { useMessagesQuery } from "./messages-query";
 import { useMemo } from "react";
 import { isAfter } from "date-fns";
@@ -8,13 +8,16 @@ export function useUnreadCountQuery(
   channel?: Channel,
 ) {
   const { data: messages } = useMessagesQuery(contact, channel);
+  const { publicKey } = useKeysQuery();
 
   return useMemo(() => {
     const lastSeenDate = contact?.lastSeenDate;
     let unreadCount = messages.length;
     if (lastSeenDate) {
-      const firstMessageAfterLastSeenDate = messages.findIndex((m) =>
-        isAfter(new Date(m.created * 1000), lastSeenDate),
+      const firstMessageAfterLastSeenDate = messages.findIndex(
+        (m) =>
+          isAfter(new Date(m.created * 1000), lastSeenDate) &&
+          m.creator !== publicKey,
       );
       if (firstMessageAfterLastSeenDate > -1) {
         unreadCount = messages.length - firstMessageAfterLastSeenDate;
