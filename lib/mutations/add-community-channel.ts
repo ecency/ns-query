@@ -3,13 +3,8 @@ import {
   useKeysQuery,
   useNostrGetUserProfileQuery,
   useNostrPublishMutation,
-  useUpdateLeftChannels,
 } from "../nostr";
-import {
-  ChatQueries,
-  useChannelsQuery,
-  useLeftCommunityChannelsQuery,
-} from "../queries";
+import { ChatQueries, useOriginalJoinedChannelsQuery } from "../queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Kind } from "nostr-tools";
 import { useContext } from "react";
@@ -17,14 +12,12 @@ import { ChatContext } from "../chat-context-provider";
 
 export function useAddCommunityChannel(channel?: Channel) {
   const { activeUsername } = useContext(ChatContext);
-  const { data: channels } = useChannelsQuery();
+  const { data: channels } = useOriginalJoinedChannelsQuery();
   const queryClient = useQueryClient();
 
   const { publicKey } = useKeysQuery();
   const { data: activeUserNostrProfiles } =
     useNostrGetUserProfileQuery(publicKey);
-  const { data: leftCommunityChannelsIds } = useLeftCommunityChannelsQuery();
-  const { mutateAsync: updateLeftChannels } = useUpdateLeftChannels();
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
     Kind.Metadata,
@@ -32,12 +25,9 @@ export function useAddCommunityChannel(channel?: Channel) {
   );
 
   return useMutation(["chats/add-community-channel"], async () => {
+    console.debug("[ns-query] Attempting to add channel to list", channel);
     const hasChannelAlready = channels?.some(({ id }) => id === channel?.id);
     if (!hasChannelAlready && channel && activeUserNostrProfiles) {
-      queryClient.setQueryData(
-        [ChatQueries.CHANNELS, activeUsername],
-        [...(channels ?? []), channel],
-      );
       const activeUserNostrProfile = activeUserNostrProfiles[0];
       await updateProfile({
         tags: [["p", publicKey!!]],
@@ -49,21 +39,30 @@ export function useAddCommunityChannel(channel?: Channel) {
           ],
         },
       });
+      console.debug("[ns-query] Joined channels list updated. Channel added.");
       await queryClient.invalidateQueries([
         ["chats/nostr-get-user-profile", publicKey],
       ]);
-      await queryClient.invalidateQueries([
-        ChatQueries.JOINED_CHANNELS,
-        activeUsername,
-      ]);
-
-      // Remove the community from left list
-      await updateLeftChannels({
-        tags: [["d", "left-channel-list"]],
-        eventMetadata: JSON.stringify(
-          leftCommunityChannelsIds?.filter((id) => id !== id) ?? [],
-        ),
-      });
+      queryClient.setQueryData(
+        [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
+        [
+          ...(queryClient.getQueryData<Channel[]>([
+            ChatQueries.ORIGINAL_JOINED_CHANNELS,
+            activeUsername,
+          ]) ?? []),
+          channel,
+        ],
+      );
+      queryClient.setQueryData(
+        [ChatQueries.CHANNELS, activeUsername],
+        [
+          ...(queryClient.getQueryData<Channel[]>([
+            ChatQueries.CHANNELS,
+            activeUsername,
+          ]) ?? []),
+          channel,
+        ],
+      );
     }
   });
 }

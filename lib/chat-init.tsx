@@ -9,6 +9,7 @@ import {
   useDirectContactsQuery,
   useJoinedChannelsQuery,
   useOriginalDirectContactsQuery,
+  useOriginalJoinedChannelsQuery,
 } from "./queries";
 import { useKeysQuery, useNostrGetUserProfileQuery } from "./nostr";
 
@@ -18,6 +19,7 @@ export function ChatInit() {
   const originalDirectContactsQuery = useOriginalDirectContactsQuery();
   const currentUserProfileQuery = useNostrGetUserProfileQuery(publicKey);
   const joinedChannelsQuery = useJoinedChannelsQuery();
+  const originalJoinedChannelsQuery = useOriginalJoinedChannelsQuery();
   const createdChannelsQuery = useCreatedChannelsQuery();
 
   // Initial fetching of manual queries based on public key
@@ -34,6 +36,7 @@ export function ChatInit() {
   const init = async () => {
     await originalDirectContactsQuery.refetch();
     await directContactsQuery.refetch();
+    await originalJoinedChannelsQuery.refetch();
     await createdChannelsQuery.refetch();
     await currentUserProfileQuery.refetch();
     await joinedChannelsQuery.refetch();
