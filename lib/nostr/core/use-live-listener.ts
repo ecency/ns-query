@@ -39,7 +39,7 @@ export function useLiveListener<DATA extends object>(
         subInfo.unsub();
         run();
       });
-    }, 500);
+    }, 10000);
   };
 
   const processEvent = async (event: Event) => {

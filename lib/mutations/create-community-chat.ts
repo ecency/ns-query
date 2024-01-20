@@ -1,27 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AccountData, useKeysQuery, useNostrPublishMutation } from "../nostr";
-import { ChatQueries, ROLES } from "../queries";
-import { useContext } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useNostrPublishMutation } from "../nostr";
 import { Kind } from "nostr-tools";
 import { KindOfCommunity } from "../types";
-import { ChatContext } from "../chat-context-provider";
+import { useAddChannelToEcency, useGetCommunityChannelQuery } from "../api";
+import { useCommunityChannelQuery } from "../queries";
 
 /**
  * A custom React Query hook for creating a chat channel within a community.
  * This hook allows you to create a chat channel associated with a specific community.
+ * @note only ecency official account able to create a community channel
  */
-export function useCreateCommunityChat(
-  community: KindOfCommunity,
-  communityAccountData: AccountData,
-  updateCommunityAccountProfile: (
-    data: AccountData,
-    nextData: AccountData,
-  ) => Promise<unknown>,
-) {
-  const queryClient = useQueryClient();
-  const { activeUsername } = useContext(ChatContext);
-
-  const { publicKey } = useKeysQuery();
+export function useCreateCommunityChat(community: KindOfCommunity) {
+  const getCommunityChannelQuery = useGetCommunityChannelQuery(community?.name);
+  const communityChannelQuery = useCommunityChannelQuery(community);
 
   const { mutateAsync: createChannel } = useNostrPublishMutation(
     ["chats/nostr-create-channel"],
@@ -29,55 +20,42 @@ export function useCreateCommunityChat(
     () => {},
     {},
   );
+  const { mutateAsync: addToEcency } = useAddChannelToEcency();
 
   return useMutation(
     ["chats/create-community-chat"],
     async () => {
+      console.debug(
+        "[ns-query] Attempting to create a channel for",
+        community.name,
+      );
       // Step 1: Create a chat channel using the `createChannel` mutation.
       const data = await createChannel({
         eventMetadata: {
           name: community.title,
-          about: community.description,
+          about: "Ecency community channel",
           communityName: community.name,
           picture: "",
-          communityModerators: [
-            { pubkey: publicKey!, name: activeUsername!, role: ROLES.OWNER },
-          ],
-          hiddenMessageIds: [],
-          removedUserIds: [],
+          communityModerators: community.team.map(([name, role]) => ({
+            name,
+            role,
+          })),
         },
         tags: [],
       });
+      console.debug("[ns-query] Created a channel for", community.name, data);
 
-      // Step 2: Extract and format channel metadata from the response.
-      const content = JSON.parse(data?.content!);
-      const channelMetaData = {
-        id: data?.id as string,
-        creator: data?.pubkey as string,
-        created: data?.created_at!,
-        communityName: content.communityName,
-        name: content.name,
-        about: content.about,
-        picture: content.picture,
-      };
-
-      // Step 3: Retrieve the user's profile information.
-      const { posting_json_metadata } = communityAccountData;
-
-      // Step 4: Update the user's profile with the new channel information.
-      const profile = JSON.parse(posting_json_metadata!).profile;
-      const newProfile = {
-        channel: channelMetaData,
-      };
-
-      return await updateCommunityAccountProfile(communityAccountData, {
-        ...profile,
-        ...newProfile,
+      // Step 2: Add channel to Ecency
+      return addToEcency({
+        channel_id: data.id,
+        meta: {},
+        username: community.name,
       });
     },
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries([ChatQueries.CHANNELS, activeUsername]);
+      onSuccess: async () => {
+        await getCommunityChannelQuery.refetch();
+        await communityChannelQuery.refetch();
       },
     },
   );

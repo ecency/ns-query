@@ -24,6 +24,7 @@ export function useNostrFetchQuery<DATA>(
       const filters = kindsOrFilters.every((item) => typeof item === "object")
         ? (kindsOrFilters as Filter[])
         : undefined;
+      console.debug("[ns-query][fetch]", kinds, filters);
       const events = await listenWhileFinish(
         pool,
         readRelays,
