@@ -27,8 +27,18 @@ export function useLeaveCommunityChannel(channel?: Channel) {
     console.debug("[ns-query] Attempting to leave channel", channel);
     if (channel && activeUserNostrProfiles) {
       const activeUserNostrProfile = activeUserNostrProfiles[0];
+
+      const lastSeenRecords = activeUserNostrProfile.channelsLastSeenDate ?? {};
+      const lastSeenTags = Object.entries(lastSeenRecords).map(
+        ([channelId, lastSeenTime]) => [
+          "lastSeenDate",
+          channelId,
+          lastSeenTime.getTime().toString(),
+        ],
+      );
+
       await updateProfile({
-        tags: [["p", publicKey!!]],
+        tags: [["p", publicKey!!], ...lastSeenTags],
         eventMetadata: {
           ...activeUserNostrProfile,
           joinedChannels: (activeUserNostrProfile.joinedChannels ?? []).filter(
@@ -50,10 +60,10 @@ export function useLeaveCommunityChannel(channel?: Channel) {
         ).filter((c) => c.id !== channel.id),
       );
       queryClient.setQueryData(
-        [ChatQueries.CHANNELS, activeUsername],
+        [ChatQueries.JOINED_CHANNELS, activeUsername],
         (
           queryClient.getQueryData<Channel[]>([
-            ChatQueries.CHANNELS,
+            ChatQueries.JOINED_CHANNELS,
             activeUsername,
           ]) ?? []
         ).filter((c) => c.id !== channel.id),

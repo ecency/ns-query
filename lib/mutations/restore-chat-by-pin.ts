@@ -46,7 +46,7 @@ export function useRestoreChatByPin() {
     localStorage.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
     await updateProfile({
-      tags: [],
+      tags: [["p", publicKey]],
       eventMetadata: {
         name: activeUsername!,
         about: "",

@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNostrPublishMutation } from "../nostr";
 import { Kind } from "nostr-tools";
 import { KindOfCommunity } from "../types";
-import { useAddChannelToEcency, useGetCommunityChannelQuery } from "../api";
-import { useCommunityChannelQuery } from "../queries";
+import { useAddChannelToEcency } from "../api";
+import { ChatQueries } from "../queries";
+import { convertEvent } from "../nostr/utils/event-converter";
 
 /**
  * A custom React Query hook for creating a chat channel within a community.
@@ -11,8 +12,7 @@ import { useCommunityChannelQuery } from "../queries";
  * @note only ecency official account able to create a community channel
  */
 export function useCreateCommunityChat(community: KindOfCommunity) {
-  const getCommunityChannelQuery = useGetCommunityChannelQuery(community?.name);
-  const communityChannelQuery = useCommunityChannelQuery(community);
+  const queryClient = useQueryClient();
 
   const { mutateAsync: createChannel } = useNostrPublishMutation(
     ["chats/nostr-create-channel"],
@@ -33,29 +33,35 @@ export function useCreateCommunityChat(community: KindOfCommunity) {
       const data = await createChannel({
         eventMetadata: {
           name: community.title,
-          about: "Ecency community channel",
+          about: "Ecency app community channel",
           communityName: community.name,
           picture: "",
-          communityModerators: community.team.map(([name, role]) => ({
-            name,
-            role,
-          })),
         },
         tags: [],
       });
       console.debug("[ns-query] Created a channel for", community.name, data);
 
       // Step 2: Add channel to Ecency
-      return addToEcency({
+      const ecencyChannel = await addToEcency({
         channel_id: data.id,
         meta: {},
         username: community.name,
       });
+
+      return [convertEvent<Kind.ChannelCreation>(data), ecencyChannel] as const;
     },
     {
-      onSuccess: async () => {
-        await getCommunityChannelQuery.refetch();
-        await communityChannelQuery.refetch();
+      onSuccess: async ([channel, ecencyChannel]) => {
+        if (channel) {
+          queryClient.setQueryData(
+            [ChatQueries.COMMUNITY_CHANNEL, channel.communityName],
+            channel,
+          );
+          queryClient.setQueryData(
+            ["private-api", "get-community-channel", channel.communityName],
+            ecencyChannel,
+          );
+        }
       },
     },
   );

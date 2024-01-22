@@ -47,7 +47,7 @@ export function useUpdateCommunityChannel(channel?: Channel) {
         tempChannels[index] = updatedChannel;
 
         queryClient.setQueryData(
-          [ChatQueries.CHANNELS, activeUsername],
+          [ChatQueries.JOINED_CHANNELS, activeUsername],
           tempChannels,
         );
       },

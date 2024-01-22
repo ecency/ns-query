@@ -6,7 +6,6 @@ export enum ChatQueries {
   CREATED_CHANNELS = "chats/created-channels",
   ORIGINAL_JOINED_CHANNELS = "chats/original-joined-channels",
   JOINED_CHANNELS = "chats/joined-channels",
-  CHANNELS = "chats/channels",
   LEFT_CHANNELS = "chats/left-channels",
   COMMUNITY_CHANNEL = "chats/community-channel",
   COMMUNITY_ROLES = "chats/community-roles",

@@ -7,6 +7,7 @@ interface Payload {
   messageId: string;
 }
 
+// TODO: use special event
 export function useHideMessageInChannel(channel?: Channel) {
   const { mutateAsync: updateChannel } = useUpdateCommunityChannel(channel);
 
@@ -20,18 +21,18 @@ export function useHideMessageInChannel(channel?: Channel) {
 
       const newUpdatedChannel: Channel = { ...channel };
 
-      if (hide) {
-        newUpdatedChannel.hiddenMessageIds = [
-          ...(newUpdatedChannel.hiddenMessageIds ?? []),
-          messageId
-        ];
-      } else {
-        newUpdatedChannel.hiddenMessageIds = newUpdatedChannel.hiddenMessageIds?.filter(
-          (id) => id === messageId
-        );
-      }
+      // if (hide) {
+      //   newUpdatedChannel.hiddenMessageIds = [
+      //     ...(newUpdatedChannel.hiddenMessageIds ?? []),
+      //     messageId
+      //   ];
+      // } else {
+      //   newUpdatedChannel.hiddenMessageIds = newUpdatedChannel.hiddenMessageIds?.filter(
+      //     (id) => id === messageId
+      //   );
+      // }
 
       return updateChannel(newUpdatedChannel);
-    }
+    },
   );
 }
