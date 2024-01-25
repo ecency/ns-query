@@ -8,6 +8,7 @@ export enum ChatQueries {
   JOINED_CHANNELS = "chats/joined-channels",
   LEFT_CHANNELS = "chats/left-channels",
   COMMUNITY_CHANNEL = "chats/community-channel",
-  COMMUNITY_ROLES = "chats/community-roles",
   LAST_MESSAGE = "chats/last-message",
+  HIDDEN_CHANNEL_MESSAGES = "chats/hidden-channel-messages",
+  BLOCKED_USERS = "chats/blocked-channel-users",
 }

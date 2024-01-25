@@ -1,38 +1,34 @@
 import { useMutation } from "@tanstack/react-query";
-import { useUpdateCommunityChannel } from "./update-community-channel";
-import { Channel } from "../nostr";
+import { Channel, useNostrPublishMutation } from "../nostr";
+import { Kind } from "nostr-tools";
 
 interface Payload {
-  hide: boolean;
   messageId: string;
+  reason?: string;
 }
 
-// TODO: use special event
+/**
+ * Use to hide specific user's message by community team member
+ * @note Only community team member's mute event will be applied in messages query.
+ *       All other event owners will be ignored
+ * @param channel Current channel
+ */
 export function useHideMessageInChannel(channel?: Channel) {
-  const { mutateAsync: updateChannel } = useUpdateCommunityChannel(channel);
+  const hideMessageRequest = useNostrPublishMutation(
+    ["chats", "hide-message", channel?.name],
+    Kind.ChannelHideMessage,
+    () => {},
+  );
 
   return useMutation(
     ["chats/hide-message-in-channel", channel?.name],
-    async ({ hide, messageId }: Payload) => {
-      if (!channel) {
-        console.error("[Chat][Nostr] – trying to update not existing channel");
-        return;
-      }
-
-      const newUpdatedChannel: Channel = { ...channel };
-
-      // if (hide) {
-      //   newUpdatedChannel.hiddenMessageIds = [
-      //     ...(newUpdatedChannel.hiddenMessageIds ?? []),
-      //     messageId
-      //   ];
-      // } else {
-      //   newUpdatedChannel.hiddenMessageIds = newUpdatedChannel.hiddenMessageIds?.filter(
-      //     (id) => id === messageId
-      //   );
-      // }
-
-      return updateChannel(newUpdatedChannel);
+    async ({ messageId, reason }: Payload) => {
+      await hideMessageRequest.mutateAsync({
+        eventMetadata: JSON.stringify({
+          reason: reason ?? "Hidden by community team",
+        }),
+        tags: [["e", messageId]],
+      });
     },
   );
 }
