@@ -7,7 +7,7 @@ import { useContext } from "react";
 import { ChatContext } from "../../chat-context-provider";
 import { useNostrFetchMutation } from "../core";
 import { ChatQueries } from "../../queries";
-import { findTagValue } from "../utils";
+import { convertMutedUsersEvents, findTagValue } from "../utils";
 
 /**
  * Use this query to retrieve filtered channel messages
@@ -38,7 +38,6 @@ export function usePublicMessagesQuery(
       },
     ],
     async (events) => {
-      console.log("joined team members are", joinedCommunityTeamKeys, channel);
       // 1. Fetch messages and convert them
       let messagesPage = events
         .map((event) => convertEvent(event))
@@ -55,10 +54,10 @@ export function usePublicMessagesQuery(
           }),
         ),
       );
-      const blockedUsersIds = blockedUsersEvents
-        .filter((e) => joinedCommunityTeamKeys.includes(e.pubkey))
-        .map((e) => findTagValue(e, "p"))
-        .filter((id) => !!id);
+      const blockedUsersIds = convertMutedUsersEvents(
+        blockedUsersEvents,
+        joinedCommunityTeamKeys,
+      );
 
       console.debug(
         "[ns-query] Hidden users by community team IDs are",
@@ -84,7 +83,7 @@ export function usePublicMessagesQuery(
       // 3. Extract message IDs and filter hidden messages event by creator
       const hiddenMessagesIds = hiddenMessagesEvents
         .filter((e) => joinedCommunityTeamKeys.includes(e.pubkey))
-        .map((e) => findTagValue(e, "e")?.[0])
+        .map((e) => findTagValue(e, "e"))
         .filter((id) => !!id);
       console.debug(
         "[ns-query] Hidden messages by community team are",

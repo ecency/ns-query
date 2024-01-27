@@ -9,3 +9,4 @@ export * from "./created-channels-query";
 export * from "./joined-channels-query";
 export * from "./unread-count-query";
 export * from "./joined-community-team-query";
+export * from "./channel-muted-users-query";
