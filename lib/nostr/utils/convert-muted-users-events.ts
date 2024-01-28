@@ -1,6 +1,6 @@
 import { Event } from "nostr-tools";
 import { findTagValue } from "./find-tag-value";
-import { extractLatestMutedUsersEvents } from "./extract-latest-muted-users-events";
+import { extractLatestEventsByTagComparing } from "./extract-latest-events-by-tag-comparing";
 
 /**
  * Convert all muted users events filtering by only moderation team and latest events
@@ -11,7 +11,7 @@ export function convertMutedUsersEvents(
   events: Event[],
   joinedCommunityTeamKeys: string[] = [],
 ) {
-  return extractLatestMutedUsersEvents(events)
+  return extractLatestEventsByTagComparing(events, "p")
     .filter((e) => joinedCommunityTeamKeys.includes(e.pubkey))
     .map((e) => [findTagValue(e, "p"), findTagValue(e, "status")])
     .filter(([pubkey, status]) => !!pubkey && status === "0")

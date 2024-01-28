@@ -7,7 +7,7 @@ import { useContext } from "react";
 import { ChatContext } from "../../chat-context-provider";
 import { useNostrFetchMutation } from "../core";
 import { ChatQueries } from "../../queries";
-import { convertMutedUsersEvents, findTagValue } from "../utils";
+import { convertHiddenMessagesEvents, convertMutedUsersEvents } from "../utils";
 
 /**
  * Use this query to retrieve filtered channel messages
@@ -81,10 +81,11 @@ export function usePublicMessagesQuery(
       );
 
       // 3. Extract message IDs and filter hidden messages event by creator
-      const hiddenMessagesIds = hiddenMessagesEvents
-        .filter((e) => joinedCommunityTeamKeys.includes(e.pubkey))
-        .map((e) => findTagValue(e, "e"))
-        .filter((id) => !!id);
+      const hiddenMessagesIds = convertHiddenMessagesEvents(
+        hiddenMessagesEvents,
+        channel!.id,
+        joinedCommunityTeamKeys,
+      );
       console.debug(
         "[ns-query] Hidden messages by community team are",
         channel,
