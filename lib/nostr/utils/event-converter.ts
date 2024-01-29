@@ -107,6 +107,13 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
         about: content.about || "",
         picture: content.picture || "",
         joinedChannels: content.joinedChannels ?? [],
+        channelsLastSeenDate: filterTagValue(event, "lastSeenDate").reduce(
+          (acc, [_, channelId, lastSeenTime]) => ({
+            ...acc,
+            [channelId]: lastSeenTime ? new Date(+lastSeenTime) : undefined,
+          }),
+          {},
+        ),
       } as any;
     case "30078":
       return content;

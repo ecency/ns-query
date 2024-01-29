@@ -12,7 +12,15 @@ export function useLogoutFromChats() {
     localStorage.removeItem("ecency_nostr_pr_" + activeUsername);
     queryClient.setQueryData([NostrQueries.PUBLIC_KEY, activeUsername], "");
     queryClient.setQueryData([NostrQueries.PRIVATE_KEY, activeUsername], "");
-    queryClient.setQueryData([ChatQueries.CHANNELS, activeUsername], []);
+    queryClient.setQueryData([ChatQueries.JOINED_CHANNELS, activeUsername], []);
+    queryClient.setQueryData(
+      [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
+      [],
+    );
+    queryClient.setQueryData(
+      [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
+      [],
+    );
     queryClient.setQueryData([ChatQueries.DIRECT_CONTACTS, activeUsername], []);
   });
 }

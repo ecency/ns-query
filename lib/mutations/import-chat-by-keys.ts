@@ -90,7 +90,7 @@ export function useImportChatByKeys(
       );
 
       await updateProfile({
-        tags: [],
+        tags: [["p", publicKey]],
         eventMetadata: {
           name: activeUsername!,
           about: "",

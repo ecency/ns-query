@@ -86,17 +86,7 @@ export function useMessagesQuery(
     {
       initialData: [],
       enabled: hasKeys && (!!currentContact || !!currentChannel),
-      select: (messages) => {
-        if (currentChannel) {
-          return messages
-            .filter(
-              (message) =>
-                !currentChannel?.hiddenMessageIds?.includes(message.id),
-            )
-            .sort((a, b) => a.created - b.created);
-        }
-        return messages.sort((a, b) => a.created - b.created);
-      },
+      select: (messages) => messages.sort((a, b) => a.created - b.created),
       refetchInterval: 1000,
     },
   );

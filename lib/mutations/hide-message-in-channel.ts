@@ -1,37 +1,60 @@
-import { useMutation } from "@tanstack/react-query";
-import { useUpdateCommunityChannel } from "./update-community-channel";
-import { Channel } from "../nostr";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Channel, NostrQueries, useNostrPublishMutation } from "../nostr";
+import { Kind } from "nostr-tools";
+import { ChatQueries } from "../queries";
+import { useContext } from "react";
+import { ChatContext } from "../chat-context-provider";
 
 interface Payload {
-  hide: boolean;
   messageId: string;
+  reason?: string;
+  status: 0 | 1; //0 is hidden 1 is shown
 }
 
+/**
+ * Use to hide specific user's message by community team member
+ * @note Only community team member's mute event will be applied in messages query.
+ *       All other event owners will be ignored
+ * @param channel Current channel
+ */
 export function useHideMessageInChannel(channel?: Channel) {
-  const { mutateAsync: updateChannel } = useUpdateCommunityChannel(channel);
+  const queryClient = useQueryClient();
+  const { activeUsername } = useContext(ChatContext);
+
+  const hideMessageRequest = useNostrPublishMutation(
+    ["chats", "hide-message", channel?.name],
+    Kind.ChannelHideMessage,
+    () => {},
+  );
 
   return useMutation(
     ["chats/hide-message-in-channel", channel?.name],
-    async ({ hide, messageId }: Payload) => {
-      if (!channel) {
-        console.error("[Chat][Nostr] – trying to update not existing channel");
-        return;
-      }
-
-      const newUpdatedChannel: Channel = { ...channel };
-
-      if (hide) {
-        newUpdatedChannel.hiddenMessageIds = [
-          ...(newUpdatedChannel.hiddenMessageIds ?? []),
-          messageId
-        ];
-      } else {
-        newUpdatedChannel.hiddenMessageIds = newUpdatedChannel.hiddenMessageIds?.filter(
-          (id) => id === messageId
-        );
-      }
-
-      return updateChannel(newUpdatedChannel);
-    }
+    async ({ messageId, reason, status }: Payload) => {
+      await hideMessageRequest.mutateAsync({
+        eventMetadata: JSON.stringify({
+          reason: reason ?? "Hidden by community team",
+        }),
+        tags: [
+          ["e", messageId],
+          ["e", channel!.id],
+          ["status", status.toString()],
+        ],
+      });
+      return { messageId, status };
+    },
+    {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries([
+          ChatQueries.HIDDEN_CHANNEL_MESSAGES,
+          activeUsername,
+          channel?.id,
+        ]);
+        await queryClient.invalidateQueries([
+          NostrQueries.PUBLIC_MESSAGES,
+          activeUsername,
+          channel?.id,
+        ]);
+      },
+    },
   );
 }

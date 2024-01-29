@@ -29,8 +29,18 @@ export function useAddCommunityChannel(channel?: Channel) {
     const hasChannelAlready = channels?.some(({ id }) => id === channel?.id);
     if (!hasChannelAlready && channel && activeUserNostrProfiles) {
       const activeUserNostrProfile = activeUserNostrProfiles[0];
+
+      const lastSeenRecords = activeUserNostrProfile.channelsLastSeenDate ?? {};
+      const lastSeenTags = Object.entries(lastSeenRecords).map(
+        ([channelId, lastSeenTime]) => [
+          "lastSeenDate",
+          channelId,
+          lastSeenTime.getTime().toString(),
+        ],
+      );
+
       await updateProfile({
-        tags: [["p", publicKey!!]],
+        tags: [["p", publicKey!!], ...lastSeenTags],
         eventMetadata: {
           ...activeUserNostrProfile,
           joinedChannels: [
@@ -54,10 +64,10 @@ export function useAddCommunityChannel(channel?: Channel) {
         ],
       );
       queryClient.setQueryData(
-        [ChatQueries.CHANNELS, activeUsername],
+        [ChatQueries.JOINED_CHANNELS, activeUsername],
         [
           ...(queryClient.getQueryData<Channel[]>([
-            ChatQueries.CHANNELS,
+            ChatQueries.JOINED_CHANNELS,
             activeUsername,
           ]) ?? []),
           channel,

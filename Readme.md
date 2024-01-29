@@ -28,7 +28,7 @@ This repository contains react-query based SDK for Ececny vision and mobile proj
 5. [Messages query](lib/queries/messages-query.ts) – use this query for fetching channel or contact messages based on their username
    * _Requirements – current user and its credentials_
    * _Note – this query are invalidating each N seconds periodically to keep messages fresh_
-6. [Joined community team query](lib/queries/nostr-joined-community-team-query.ts) – use this query for fetching community team member which joined to chats and assigned to moderation team
+6. ~~[Joined community team query](lib/queries/nostr-joined-community-team-query.ts) – use this query for fetching community team member which joined to chats and assigned to moderation team~~
    * _Requirements – current user and its credentials_
 7. [Created channels query](lib/queries/created-channels-query.ts) – use this query for fetching created channels by current Nostr account
    * _Requirements – current user and its credentials_
@@ -60,7 +60,7 @@ All mutations marked as _override channel metadata_ means that mutation could by
 11. [Restore chat by PIN](lib/mutations/restore-chat-by-pin.ts) – restores logged out account session by PIN
 12. [Send message](lib/mutations/send-message.ts) – sends message to specific direct contact or channel
 13. [Update channel's blocked users](lib/mutations/update-channel-blocked-users.ts) – updates channel's blocked users(overrides channel metadata)
-14. [Update channel's moderator](lib/mutations/update-channel-moderator.ts) – add, remove or update channel's moderator
+14. ~~[Update channel's moderator](lib/mutations/update-channel-moderator.ts) – add, remove or update channel's moderator~~
 15. [Update community channel](lib/mutations/update-community-channel.ts) – updates community channel's information(overrides channel metadata)
 ### Low-level mutations
 1. [Find healthy relay](lib/nostr/mutations/find-healthy-relay.ts) – finds healthy Nostr relay and return its host(uses by library itself – no need to re-use it)
@@ -69,6 +69,6 @@ All mutations marked as _override channel metadata_ means that mutation could by
 4. [Update left channels](lib/nostr/mutations/update-left-channels.ts) – updates left channels list(uses in [add community channel](lib/mutations/add-community-channel.ts) and [Leave community channel](lib/mutations/leave-community-channel.ts))
 
 ## Misc
-[useActiveUserSwitching](lib/hooks/use-active-user-switching.ts) – invalidates all Nostr queries each time when active user changes(no need to call, library use it itself).
+~~[useActiveUserSwitching](lib/hooks/use-active-user-switching.ts) – invalidates all Nostr queries each time when active user changes(no need to call, library use it itself).~~
 
 [useAutoScrollInChatBox](lib/hooks/use-auto-scroll-in-chat-box.ts) – uses for auto-scrolling to the end of chatbox(available in Web only)
