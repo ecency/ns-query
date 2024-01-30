@@ -23,7 +23,11 @@ export function useChannelMutedUsersQuery(
         "#e": [channel?.id ?? ""],
       },
     ],
-    (events) => convertMutedUsersEvents(events, joinedCommunityTeamKeys),
+    (events) =>
+      convertMutedUsersEvents(
+        events,
+        joinedCommunityTeamKeys.map(({ pubkey }) => pubkey),
+      ),
     {
       enabled: !!channel?.id,
       refetchOnMount: false,

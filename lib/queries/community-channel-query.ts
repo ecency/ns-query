@@ -4,7 +4,7 @@ import { useGetCommunityChannelQuery } from "../api";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { UseQueryResult } from "@tanstack/react-query";
-import { useMount } from "react-use";
+import { useEffect } from "react";
 
 /**
  * Get the community's channel information
@@ -18,11 +18,11 @@ export function useCommunityChannelQuery(community?: {
     useGetCommunityChannelQuery(community?.name);
   const { hasKeys } = useKeysQuery();
 
-  useMount(() => {
-    if (!communityChannel) {
+  useEffect(() => {
+    if (!communityChannel && community) {
       refetchCommunityChannel();
     }
-  });
+  }, [communityChannel, community]);
 
   return useNostrFetchQuery<any>(
     [ChatQueries.COMMUNITY_CHANNEL, community?.name],
