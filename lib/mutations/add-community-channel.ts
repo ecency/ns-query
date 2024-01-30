@@ -66,10 +66,14 @@ export function useAddCommunityChannel(channel?: Channel) {
       queryClient.setQueryData(
         [ChatQueries.JOINED_CHANNELS, activeUsername],
         [
-          ...(queryClient.getQueryData<Channel[]>([
-            ChatQueries.JOINED_CHANNELS,
-            activeUsername,
-          ]) ?? []),
+          ...(
+            queryClient.getQueryData<Channel[]>([
+              ChatQueries.JOINED_CHANNELS,
+              activeUsername,
+            ]) ?? []
+          )
+            // Since We ecency-vision able to add channels to query manually then We have to keep them unique
+            .filter((ch) => ch.id !== channel.id),
           channel,
         ],
       );
