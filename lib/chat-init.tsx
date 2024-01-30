@@ -5,7 +5,6 @@ import {
   useLivePublicMessagesListener,
 } from "./live-listeners";
 import {
-  useCreatedChannelsQuery,
   useDirectContactsQuery,
   useJoinedChannelsQuery,
   useOriginalDirectContactsQuery,
@@ -20,7 +19,6 @@ export function ChatInit() {
   const currentUserProfileQuery = useNostrGetUserProfileQuery(publicKey);
   const joinedChannelsQuery = useJoinedChannelsQuery();
   const originalJoinedChannelsQuery = useOriginalJoinedChannelsQuery();
-  const createdChannelsQuery = useCreatedChannelsQuery();
 
   // Initial fetching of manual queries based on public key
   useEffect(() => {
@@ -37,7 +35,6 @@ export function ChatInit() {
     await originalDirectContactsQuery.refetch();
     await directContactsQuery.refetch();
     await originalJoinedChannelsQuery.refetch();
-    await createdChannelsQuery.refetch();
     await currentUserProfileQuery.refetch();
     await joinedChannelsQuery.refetch();
   };
