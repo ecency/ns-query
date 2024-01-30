@@ -54,7 +54,14 @@ export function useJoinedChannelsQuery() {
     (events) =>
       events
         .map((event) => convertEvent<Kind.ChannelCreation>(event))
-        .filter((channel) => !!channel) as Channel[],
+        .filter((channel) => !!channel)
+        .reduce<Channel[]>(
+          (acc, channel) =>
+            acc.every((ac) => ac.id !== channel?.id)
+              ? [...acc, channel as Channel]
+              : acc,
+          [],
+        ),
     {
       enabled: (activeUserNostrProfiles?.[0]?.joinedChannels?.length ?? 0) > 0,
       refetchOnMount: false,
