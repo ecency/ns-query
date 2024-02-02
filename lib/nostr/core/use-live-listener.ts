@@ -1,6 +1,7 @@
 import { Event, Filter } from "nostr-tools";
 import { useContext, useEffect, useRef } from "react";
 import { NostrContext } from "../nostr-context";
+import { useTimeoutFn } from "react-use";
 
 export function useLiveListener<DATA extends object>(
   filters: Filter[],
@@ -11,36 +12,38 @@ export function useLiveListener<DATA extends object>(
     disabledSince?: boolean;
   },
 ) {
-  const { pool, readRelays } = useContext(NostrContext);
-  const timeoutRef = useRef<any>();
+  const { pool, readRelays, writeRelays, sleepMode } = useContext(NostrContext);
   const sinceRef = useRef<number>(Math.floor(new Date().getTime() / 1000));
+
+  const [isReady, cancel, reset] = useTimeoutFn(() => {
+    const nextFilters = sinceRef.current
+      ? (filters as Filter[]).map((f) => ({
+          ...f,
+          ...(options.disabledSince ? {} : { since: sinceRef.current }),
+        }))
+      : filters;
+    const subInfo = pool?.sub(readRelays, nextFilters);
+    subInfo?.on("event", (event: Event) => processEvent(event));
+    subInfo?.on("eose", () => {
+      subInfo.unsub();
+      reset();
+    });
+  }, 10000);
 
   useEffect(() => {
     if (!options.enabled || filters.length === 0) {
       return;
     }
 
-    run();
-  }, [options, filters]);
-
-  const run = () => {
-    clearTimeout(timeoutRef.current);
-
-    timeoutRef.current = setTimeout(() => {
-      const nextFilters = sinceRef.current
-        ? filters.map((f) => ({
-            ...f,
-            ...(options.disabledSince ? {} : { since: sinceRef.current }),
-          }))
-        : filters;
-      const subInfo = pool?.sub(readRelays, nextFilters);
-      subInfo?.on("event", (event: Event) => processEvent(event));
-      subInfo?.on("eose", () => {
-        subInfo.unsub();
-        run();
-      });
-    }, 10000);
-  };
+    if (sleepMode) {
+      console.debug("[ns-query] Initiated connections teardown by timeout");
+      cancel();
+      pool?.close([...readRelays, ...writeRelays]);
+    } else {
+      console.debug("[ns-query] Reconnected");
+      reset();
+    }
+  }, [sleepMode, options, filters]);
 
   const processEvent = async (event: Event) => {
     const data = await dataResolver(event);

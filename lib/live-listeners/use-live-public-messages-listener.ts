@@ -9,7 +9,7 @@ import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { ChatQueries, useChannelsQuery } from "../queries";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
 
 export function useLivePublicMessagesListener() {
@@ -18,12 +18,17 @@ export function useLivePublicMessagesListener() {
   const { activeUsername } = useContext(ChatContext);
   const { publicKey, privateKey } = useKeysQuery();
   const { data: channels } = useChannelsQuery();
+  const filters = useMemo(
+    () =>
+      (channels ?? []).map((channel) => ({
+        kinds: [Kind.ChannelMessage],
+        "#e": [channel.id],
+      })),
+    [channels],
+  );
 
   useLiveListener<Message>(
-    (channels ?? []).map((channel) => ({
-      kinds: [Kind.ChannelMessage],
-      "#e": [channel.id],
-    })),
+    filters,
     (event) =>
       convertEvent<Kind.ChannelMessage>(event, publicKey!!, privateKey!!)!!,
     async (message) => {
