@@ -27,27 +27,18 @@ export function useGetSetOfPublicKeysQuery(usernames: string[] = []) {
   return useQuery(
     ["private-api", "get-pub-keys", usernames],
     async () => {
-      const result = [];
-      try {
-        for (const username of usernames) {
-          const response = await axios.get<{ pubkey: string }>(
-            `${privateApiHost}/private-api/chats-pub/${username}`,
-          );
-          const data = response.data;
-          result.push(data.pubkey);
-        }
-      } catch (e) {
-        if (result.length > 0) {
-          throw new Error(
-            "[ns-query][private-api] failed to fetch set of public keys",
-          );
-        }
-      }
-      return result;
+      const response = await axios.post<{ pubkey: string; username: string }[]>(
+        `${privateApiHost}/private-api/chats-get`,
+        {
+          users: usernames,
+        },
+      );
+      return response.data;
     },
     {
       enabled: usernames.length > 0,
       refetchOnMount: false,
+      initialData: [],
     },
   );
 }

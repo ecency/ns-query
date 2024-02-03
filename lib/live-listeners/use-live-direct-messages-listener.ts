@@ -12,7 +12,7 @@ import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { useAddDirectContact } from "../mutations";
 import { ChatQueries } from "../queries";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
 
 export function useLiveDirectMessagesListener() {
@@ -26,6 +26,23 @@ export function useLiveDirectMessagesListener() {
   const { mutateAsync: getAccountMetadata } = useNostrFetchMutation(
     ["chats/nostr-get-user-profile"],
     [],
+  );
+
+  const filters = useMemo(
+    () =>
+      publicKey
+        ? [
+            {
+              kinds: [Kind.EncryptedDirectMessage],
+              authors: [publicKey!!],
+            },
+            {
+              kinds: [Kind.EncryptedDirectMessage],
+              "#p": [publicKey!!],
+            },
+          ]
+        : [],
+    [publicKey],
   );
 
   const addContact = async (pubkey: string) => {
@@ -47,16 +64,7 @@ export function useLiveDirectMessagesListener() {
   };
 
   useLiveListener<Message>(
-    [
-      {
-        kinds: [Kind.EncryptedDirectMessage],
-        authors: [publicKey!!],
-      },
-      {
-        kinds: [Kind.EncryptedDirectMessage],
-        "#p": [publicKey!!],
-      },
-    ],
+    filters,
     (event) =>
       convertEvent<Kind.EncryptedDirectMessage>(
         event,

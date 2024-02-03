@@ -25,7 +25,11 @@ export function useChannelHiddenMessagesQuery(
       },
     ],
     (events) =>
-      convertHiddenMessagesEvents(events, channel!.id, joinedCommunityTeamKeys),
+      convertHiddenMessagesEvents(
+        events,
+        channel!.id,
+        joinedCommunityTeamKeys.map(({ pubkey }) => pubkey),
+      ),
     {
       enabled: !!channel?.id,
       refetchOnMount: false,

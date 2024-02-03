@@ -46,7 +46,7 @@ export function useOriginalDirectContactsQuery() {
       initialData: [],
       enabled: hasKeys,
       refetchOnMount: false,
-      refetchInterval: 30000,
+      refetchInterval: 60000,
     },
   );
 }

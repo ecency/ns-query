@@ -28,7 +28,7 @@ export function useLastMessageQuery(
   const { refetch: refetchDirectMessages } = useDirectMessagesQuery(contact);
   const { refetch: refetchPublicMessages } = usePublicMessagesQuery(
     channel,
-    joinedCommunityTeamKeys,
+    joinedCommunityTeamKeys.map(({ pubkey }) => pubkey),
   );
   const { data: messages } = useMessagesQuery(contact, channel);
 
