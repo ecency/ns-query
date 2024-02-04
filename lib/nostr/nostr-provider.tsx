@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useMemo, useRef, useState } from "react";
+import React, { PropsWithChildren, useMemo, useRef } from "react";
 import { SimplePool } from "nostr-tools";
 import { NostrContext } from "./nostr-context";
 
@@ -13,7 +13,6 @@ export function NostrProvider({ children }: PropsWithChildren<unknown>) {
   const lowLatencyPoolRef = useRef(new SimplePool({ eoseSubTimeout: 10000 }));
 
   const useLowLatency = false;
-  const [sleepMode, setSleepMode] = useState(false);
 
   const readRelays = useMemo(
     () => Object.keys(RELAYS).filter((r) => RELAYS[r].read),
@@ -30,8 +29,6 @@ export function NostrProvider({ children }: PropsWithChildren<unknown>) {
         pool: useLowLatency ? lowLatencyPoolRef.current : poolRef.current,
         readRelays,
         writeRelays,
-        sleepMode,
-        setSleepMode,
       }}
     >
       {children}

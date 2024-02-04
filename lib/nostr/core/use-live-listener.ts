@@ -12,7 +12,7 @@ export function useLiveListener<DATA extends object>(
     disabledSince?: boolean;
   },
 ) {
-  const { pool, readRelays, writeRelays, sleepMode } = useContext(NostrContext);
+  const { pool, readRelays, writeRelays } = useContext(NostrContext);
   const sinceRef = useRef<number>(Math.floor(new Date().getTime() / 1000));
 
   const [isReady, cancel, reset] = useTimeoutFn(() => {
@@ -34,16 +34,8 @@ export function useLiveListener<DATA extends object>(
     if (!options.enabled || filters.length === 0) {
       return;
     }
-
-    if (sleepMode) {
-      console.debug("[ns-query] Initiated connections teardown by timeout");
-      cancel();
-      pool?.close([...readRelays, ...writeRelays]);
-    } else {
-      console.debug("[ns-query] Reconnected");
-      reset();
-    }
-  }, [sleepMode, options, filters]);
+    reset();
+  }, [options, filters]);
 
   const processEvent = async (event: Event) => {
     const data = await dataResolver(event);
