@@ -14,13 +14,12 @@ export function useNostrFetchMutation(
   filters: Filter[],
   options?: UseMutationOptions<Event[], Error, Filter[] | undefined>,
 ) {
-  const { pool, readRelays, setSleepMode } = useContext(NostrContext);
+  const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
   return useMutation(
     key,
     (newFilters?: Filter[]) => {
-      setSleepMode(false);
       return listenWhileFinish(pool, readRelays, [], publicKey!!, [
         ...filters,
         ...(newFilters ?? []),

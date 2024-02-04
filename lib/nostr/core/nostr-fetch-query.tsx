@@ -12,7 +12,7 @@ export function useNostrFetchQuery<DATA>(
   dataResolver: (events: Event[]) => DATA | Promise<DATA>,
   queryOptions?: UseQueryOptions<DATA>,
 ) {
-  const { pool, readRelays, sleepMode } = useContext(NostrContext);
+  const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
   return useQuery(
@@ -25,10 +25,6 @@ export function useNostrFetchQuery<DATA>(
         ? (kindsOrFilters as Filter[])
         : undefined;
       console.debug("[ns-query][fetch]", kinds, filters);
-
-      if (sleepMode) {
-        return dataResolver([]);
-      }
 
       const events = await listenWhileFinish(
         pool,

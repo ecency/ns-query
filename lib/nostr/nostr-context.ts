@@ -10,12 +10,8 @@ export const NostrContext = createContext<{
   pool: SimplePool | undefined;
   readRelays: string[];
   writeRelays: string[];
-  sleepMode: boolean;
-  setSleepMode: (v: boolean) => void;
 }>({
   pool: undefined,
   writeRelays: [],
   readRelays: [],
-  sleepMode: false,
-  setSleepMode: () => {},
 });
