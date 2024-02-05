@@ -5,7 +5,10 @@ import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 import { isAfter } from "date-fns";
 
-function convertEventToDirectContacts(events: Event[]) {
+function convertEventToDirectContacts(
+  events: Event[],
+  activeUserContact?: DirectContact,
+) {
   // Get first event with profile info
   // note: events could be duplicated
   const profileEvent = events.find((event) => event.kind === Kind.Contacts);
@@ -25,9 +28,16 @@ function convertEventToDirectContacts(events: Event[]) {
           contacts[contactIndex].lastSeenDate = new Date(+value);
         }
       });
+
+    if (
+      activeUserContact &&
+      contacts.every((c) => c.pubkey !== activeUserContact.pubkey)
+    ) {
+      contacts.push(activeUserContact);
+    }
     return contacts;
   }
-  return [];
+  return activeUserContact ? [activeUserContact] : [];
 }
 
 /**
@@ -36,12 +46,16 @@ function convertEventToDirectContacts(events: Event[]) {
  */
 export function useOriginalDirectContactsQuery() {
   const { activeUsername } = useContext(ChatContext);
-  const { hasKeys } = useKeysQuery();
+  const { hasKeys, publicKey } = useKeysQuery();
 
   return useNostrFetchQuery<DirectContact[]>(
     [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
     [Kind.Contacts],
-    (events) => convertEventToDirectContacts(events),
+    (events) =>
+      convertEventToDirectContacts(events, {
+        name: activeUsername!,
+        pubkey: publicKey!,
+      }),
     {
       initialData: [],
       enabled: hasKeys,
