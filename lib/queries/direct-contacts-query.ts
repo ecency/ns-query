@@ -67,12 +67,16 @@ export function useOriginalDirectContactsQuery() {
 
 export function useDirectContactsQuery() {
   const { activeUsername } = useContext(ChatContext);
-  const { hasKeys } = useKeysQuery();
+  const { hasKeys, publicKey } = useKeysQuery();
 
   return useNostrFetchQuery<DirectContact[]>(
     [ChatQueries.DIRECT_CONTACTS, activeUsername],
     [Kind.Contacts],
-    (events) => convertEventToDirectContacts(events),
+    (events) =>
+      convertEventToDirectContacts(events, {
+        name: activeUsername!,
+        pubkey: publicKey!,
+      }),
     {
       initialData: [],
       enabled: hasKeys,
