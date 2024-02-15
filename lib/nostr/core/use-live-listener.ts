@@ -28,7 +28,7 @@ export function useLiveListener<DATA extends object>(
       subInfo.unsub();
       reset();
     });
-  }, 10000);
+  }, 3000);
 
   useEffect(() => {
     if (!options.enabled || filters.length === 0) {
