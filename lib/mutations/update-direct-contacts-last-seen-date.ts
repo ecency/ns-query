@@ -64,23 +64,23 @@ export function useUpdateDirectContactsLastSeenDate() {
     {
       onSuccess: (contact) => {
         if (contact) {
-          const directContacts =
-            queryClient.getQueryData<DirectContact[]>([
-              ChatQueries.DIRECT_CONTACTS,
-              activeUsername,
-            ]) ?? [];
-          const nextDirectContacts = [
-            ...directContacts.filter((dc) => dc.pubkey !== contact.pubkey),
-            contact,
-          ];
-          queryClient.setQueryData(
-            [ChatQueries.DIRECT_CONTACTS, activeUsername],
-            nextDirectContacts,
+          queryClient.setQueryData<DirectContact[]>(
+            [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
+            (directContacts) => [
+              ...(directContacts ?? []).filter(
+                (dc) => dc.pubkey !== contact.pubkey,
+              ),
+              contact,
+            ],
           );
-          console.debug(
-            "[ns-query] Next direct contacts",
-            contact,
-            nextDirectContacts,
+          queryClient.setQueryData<DirectContact[]>(
+            [ChatQueries.DIRECT_CONTACTS, activeUsername],
+            (directContacts) => [
+              ...(directContacts ?? []).filter(
+                (dc) => dc.pubkey !== contact.pubkey,
+              ),
+              contact,
+            ],
           );
         }
       },
