@@ -66,26 +66,22 @@ export function useAddDirectContact() {
     {
       onSuccess: (contact) => {
         if (contact) {
-          const directContacts =
-            queryClient.getQueryData<DirectContact[]>([
-              ChatQueries.DIRECT_CONTACTS,
-              activeUsername,
-            ]) ?? [];
-          if (directContacts.every((dc) => dc.pubkey !== contact.pubkey)) {
-            queryClient.setQueryData(
-              [ChatQueries.DIRECT_CONTACTS, activeUsername],
-              [...directContacts, contact],
-            );
-          }
-          queryClient.setQueryData(
+          queryClient.setQueryData<DirectContact[]>(
+            [ChatQueries.DIRECT_CONTACTS, activeUsername],
+            (directContacts) => {
+              const notExists = directContacts?.every(
+                (dc) => dc.pubkey !== contact.pubkey,
+              );
+              if (notExists) {
+                return [...(directContacts ?? []), contact];
+              }
+              return directContacts;
+            },
+          );
+
+          queryClient.setQueryData<DirectContact[]>(
             [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
-            [
-              ...(queryClient.getQueryData<DirectContact[]>([
-                ChatQueries.ORIGINAL_DIRECT_CONTACTS,
-                activeUsername,
-              ]) ?? []),
-              contact,
-            ],
+            (data) => [...(data ?? []), contact],
           );
         }
       },
