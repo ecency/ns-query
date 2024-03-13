@@ -1,12 +1,12 @@
-import { Kind } from "nostr-tools";
-import { DirectContact, useNostrPublishMutation } from "../nostr";
-import { ChatQueries } from "../queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
+import { DirectContact, useNostrPublishMutation } from "../nostr";
+import { Kind } from "nostr-tools";
+import { ChatQueries } from "../queries";
 import { updateContactsBasedOnResult } from "./utils";
 
-export function useUpdateDirectContactsLastSeenDate() {
+export function usePinContact() {
   const queryClient = useQueryClient();
   const { activeUsername } = useContext(ChatContext);
 
@@ -17,24 +17,20 @@ export function useUpdateDirectContactsLastSeenDate() {
   );
 
   return useMutation(
-    ["chats/nostr-update-direct-contacts-last-seen-date"],
+    ["chats/nostr-update-direct-contacts-pins"],
     async ({
       contact,
-      lastSeenDate,
+      pinned,
     }: {
       contact: DirectContact;
-      lastSeenDate: Date;
+      pinned: boolean;
     }) => {
       const directContacts =
         queryClient.getQueryData<DirectContact[]>([
           ChatQueries.ORIGINAL_DIRECT_CONTACTS,
           activeUsername,
         ]) ?? [];
-      console.debug(
-        "[ns-query] Updating direct contact last seen date",
-        contact,
-        lastSeenDate,
-      );
+      console.debug("[ns-query] Updating direct contact pin", contact, pinned);
 
       const contactTags = directContacts.map((c) => [
         "p",
@@ -42,30 +38,26 @@ export function useUpdateDirectContactsLastSeenDate() {
         "",
         c.name,
       ]);
-      const pinTags = directContacts.map((c) => [
-        "pinned",
-        c.pubkey,
-        c.pinned ? "true" : "false",
-      ]);
-      const lastSeenTags = directContacts
+      const pinTags = directContacts
         .filter((c) => contact.pubkey !== c.pubkey)
-        .map((c) => [
-          "lastSeenDate",
-          c.pubkey,
-          c.lastSeenDate?.getTime().toString() ?? "",
-        ]);
+        .map((c) => ["pinned", c.pubkey, c.pinned ? "true" : "false"]);
+      const lastSeenTags = directContacts.map((c) => [
+        "lastSeenDate",
+        c.pubkey,
+        c.lastSeenDate?.getTime().toString() ?? "",
+      ]);
 
       await publishDirectContact({
         tags: [
           ...contactTags,
           ...lastSeenTags,
           ...pinTags,
-          ["lastSeenDate", contact.pubkey, lastSeenDate.getTime().toString()],
+          ["pinned", contact.pubkey, pinned ? "true" : "false"],
         ],
         eventMetadata: "",
       });
 
-      contact.lastSeenDate = lastSeenDate;
+      contact.pinned = pinned;
       return contact;
     },
     {
