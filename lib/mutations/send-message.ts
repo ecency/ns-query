@@ -38,7 +38,13 @@ export function useSendMessage(
 
   return useMutation(
     ["chats/send-message"],
-    async (message: string) => {
+    async ({
+      forwardedFrom,
+      message,
+    }: {
+      message: string;
+      forwardedFrom?: string;
+    }) => {
       if (!message || message.includes("Uploading")) {
         throw new Error(
           "[Chat][SendMessage] – empty message or has uploading file",
@@ -52,9 +58,9 @@ export function useSendMessage(
       }
 
       if (currentChannel) {
-        return sendPublicMessage({ message });
+        return sendPublicMessage({ message, forwardedFrom });
       } else if (currentContact) {
-        return sendDirectMessage(message);
+        return sendDirectMessage({ message, forwardedFrom });
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
       }

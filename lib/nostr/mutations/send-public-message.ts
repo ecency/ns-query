@@ -7,6 +7,7 @@ import { Kind } from "nostr-tools";
 interface Payload {
   message: string;
   mentions?: string[];
+  forwardedFrom?: string;
 }
 
 export function useNostrSendPublicMessage(channelId?: string, parent?: string) {
@@ -19,7 +20,7 @@ export function useNostrSendPublicMessage(channelId?: string, parent?: string) {
 
   return useMutation(
     ["chats/send-public-message"],
-    async ({ message, mentions }: Payload) => {
+    async ({ message, mentions, forwardedFrom }: Payload) => {
       const root = parent || channelId;
 
       if (!root) {
@@ -37,6 +38,10 @@ export function useNostrSendPublicMessage(channelId?: string, parent?: string) {
 
       if (mentions) {
         mentions.forEach((m) => tags.push(["p", m]));
+      }
+
+      if (forwardedFrom) {
+        tags.push(["fwd", forwardedFrom]);
       }
 
       const event = await publishChannelMessage({

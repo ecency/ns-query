@@ -18,34 +18,48 @@ export function useNostrSendDirectMessage(
   );
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
-  return useMutation(["chats/send-direct-message"], async (message: string) => {
-    if (!publicKey || !privateKey || !destinationPublicKey) {
-      throw new Error(
-        "[Chat][Nostr] – attempting to send direct message with no private, destination or public key",
-      );
-    }
-
-    const encryptedMessage = await nip04.encrypt(
-      ownerPrivateKey,
-      destinationPublicKey,
+  return useMutation(
+    ["chats/send-direct-message"],
+    async ({
       message,
-    );
-    const tags = [["p", destinationPublicKey]];
-
-    if (parent) {
-      const relay = await findHealthyRelay(parent);
-      if (relay) {
-        tags.push(["e", parent, relay, "root"]);
+      forwardedFrom,
+    }: {
+      message: string;
+      forwardedFrom?: string;
+    }) => {
+      if (!publicKey || !privateKey || !destinationPublicKey) {
+        throw new Error(
+          "[Chat][Nostr] – attempting to send direct message with no private, destination or public key",
+        );
       }
-    }
-    const event = await publishEncryptedMessage({
-      tags,
-      eventMetadata: encryptedMessage,
-    });
-    return convertEvent<Kind.EncryptedDirectMessage>(
-      event,
-      publicKey,
-      privateKey,
-    )!!;
-  });
+
+      const encryptedMessage = await nip04.encrypt(
+        ownerPrivateKey,
+        destinationPublicKey,
+        message,
+      );
+      const tags = [["p", destinationPublicKey]];
+
+      if (parent) {
+        const relay = await findHealthyRelay(parent);
+        if (relay) {
+          tags.push(["e", parent, relay, "root"]);
+        }
+      }
+
+      if (forwardedFrom) {
+        tags.push(["fwd", forwardedFrom]);
+      }
+
+      const event = await publishEncryptedMessage({
+        tags,
+        eventMetadata: encryptedMessage,
+      });
+      return convertEvent<Kind.EncryptedDirectMessage>(
+        event,
+        publicKey,
+        privateKey,
+      )!!;
+    },
+  );
 }
