@@ -13,3 +13,4 @@ export * from "./restore-chat-by-pin";
 export * from "./update-direct-contacts-last-seen-date";
 export * from "./update-channel-last-seen-date";
 export * from "./mute-user-in-channel";
+export * from "./pin-contact";

@@ -48,7 +48,7 @@ export function useResendMessage(
       if (currentChannel) {
         return sendPublicMessage({ message: message.content });
       } else if (currentContact) {
-        return sendDirectMessage(message.content);
+        return sendDirectMessage({ message: message.content });
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
       }

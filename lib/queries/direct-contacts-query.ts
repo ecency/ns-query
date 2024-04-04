@@ -29,6 +29,15 @@ function convertEventToDirectContacts(
         }
       });
 
+    profileEvent.tags
+      .filter(([tag]) => tag === "pinned")
+      .forEach(([_, pubkey, value]) => {
+        const contactIndex = contacts.findIndex((c) => c.pubkey === pubkey);
+        if (contactIndex > -1) {
+          contacts[contactIndex].pinned = value === "true";
+        }
+      });
+
     if (
       activeUserContact &&
       contacts.every((c) => c.pubkey !== activeUserContact.pubkey)
@@ -60,7 +69,6 @@ export function useOriginalDirectContactsQuery() {
       initialData: [],
       enabled: hasKeys,
       refetchOnMount: false,
-      refetchInterval: 60000,
     },
   );
 }
@@ -82,16 +90,18 @@ export function useDirectContactsQuery() {
       enabled: hasKeys,
       refetchOnMount: false,
       select: (data) =>
-        data.sort((a, b) => {
-          if (
-            a.lastSeenDate instanceof Date &&
-            b.lastSeenDate instanceof Date &&
-            isAfter(a.lastSeenDate, b.lastSeenDate)
-          ) {
-            return -1;
-          }
-          return 0;
-        }),
+        data
+          .sort((a, b) => {
+            if (
+              a.lastSeenDate instanceof Date &&
+              b.lastSeenDate instanceof Date &&
+              isAfter(a.lastSeenDate, b.lastSeenDate)
+            ) {
+              return -1;
+            }
+            return 0;
+          })
+          .sort((a, b) => +(b.pinned ?? false) - +(a.pinned ?? false)),
     },
   );
 }
