@@ -20,7 +20,6 @@ export default defineConfig({
         "react/jsx-runtime",
         "@tanstack/react-query",
         "date-fns",
-        "react-use",
         "crypto",
       ],
     },
