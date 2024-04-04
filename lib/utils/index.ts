@@ -13,3 +13,4 @@ export * from "./get-relative-date";
 export * from "./encryption-tools";
 export * from "./is-single-emoji";
 export * from "./is-community";
+export * from "./useIsMounted";
