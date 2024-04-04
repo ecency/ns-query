@@ -1,7 +1,7 @@
 import { Event, Filter } from "nostr-tools";
 import { useContext, useEffect, useRef } from "react";
 import { NostrContext } from "../nostr-context";
-import { useTimeoutFn } from "react-use";
+import { useTimeoutFn } from "../../utils";
 
 export function useLiveListener<DATA extends object>(
   filters: Filter[],
