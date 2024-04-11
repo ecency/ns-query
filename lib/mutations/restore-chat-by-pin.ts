@@ -8,7 +8,7 @@ import { useGetKeysQuery, useSaveKeys } from "../api";
 
 export function useRestoreChatByPin() {
   const queryClient = useQueryClient();
-  const { activeUserData, activeUsername } = useContext(ChatContext);
+  const { activeUserData, activeUsername, storage } = useContext(ChatContext);
 
   const { publicKey } = useKeysQuery();
   const { data: keys } = useGetKeysQuery();
@@ -43,7 +43,7 @@ export function useRestoreChatByPin() {
       decryptedKey,
     );
 
-    localStorage.setItem("ecency_nostr_pr_" + activeUsername, pin);
+    storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
     await updateProfile({
       tags: [["p", publicKey]],

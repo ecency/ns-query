@@ -17,6 +17,7 @@ interface Context {
   activeUserData: AccountData | undefined;
   privateApiHost: string;
   ecencyAccessToken: string;
+  storage?: Storage;
 }
 
 interface Props {
@@ -24,6 +25,7 @@ interface Props {
   activeUserData?: AccountData;
   privateApiHost: string;
   ecencyAccessToken: string;
+  storage?: Storage;
 }
 
 export const ChatContext = createContext<Context>({
@@ -50,6 +52,7 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
     props.ecencyAccessToken,
   );
   const [privateApiHost, setPrivateApiHost] = useState(props.privateApiHost);
+  const [storage, setStorage] = useState<Storage | undefined>(props.storage);
 
   useEffect(() => {
     setEcencyAccessToken(props.ecencyAccessToken);
@@ -75,6 +78,7 @@ export const ChatContextProvider = (props: PropsWithChildren<Props>) => {
         activeUserData,
         privateApiHost,
         ecencyAccessToken,
+        storage,
       }}
     >
       <NostrProvider>

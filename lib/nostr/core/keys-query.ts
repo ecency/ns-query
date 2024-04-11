@@ -6,7 +6,7 @@ import { ChatContext } from "../../chat-context-provider";
 import { useGetKeysQuery } from "../../api";
 
 export function useKeysQuery() {
-  const { activeUsername, activeUserData } = useContext(ChatContext);
+  const { activeUsername, activeUserData, storage } = useContext(ChatContext);
   const getKeysQuery = useGetKeysQuery();
 
   useMount(() => {
@@ -25,7 +25,7 @@ export function useKeysQuery() {
       {
         queryKey: [NostrQueries.PRIVATE_KEY, activeUsername],
         queryFn: async () => {
-          const pin = localStorage.getItem("ecency_nostr_pr_" + activeUsername);
+          const pin = storage?.getItem("ecency_nostr_pr_" + activeUsername);
 
           if (!pin) {
             return null;
