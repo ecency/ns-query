@@ -18,7 +18,7 @@ export function useImportChatByKeys(
   meta?: Record<string, unknown>,
 ) {
   const queryClient = useQueryClient();
-  const { activeUsername, activeUserData } = useContext(ChatContext);
+  const { activeUsername, storage } = useContext(ChatContext);
 
   const { mutateAsync: uploadChatKeys } = useSaveKeys();
   const { mutateAsync: uploadKeys } = useMutation(
@@ -79,7 +79,7 @@ export function useImportChatByKeys(
         iv: initialVector,
       });
 
-      localStorage.setItem("ecency_nostr_pr_" + activeUsername, pin);
+      storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
       queryClient.setQueryData(
         [NostrQueries.PUBLIC_KEY, activeUsername],
         publicKey,

@@ -6,10 +6,10 @@ import { ChatContext } from "../chat-context-provider";
 
 export function useLogoutFromChats() {
   const queryClient = useQueryClient();
-  const { activeUsername } = useContext(ChatContext);
+  const { activeUsername, storage } = useContext(ChatContext);
 
   return useMutation(["chats/logout-from-chats"], async () => {
-    localStorage.removeItem("ecency_nostr_pr_" + activeUsername);
+    storage?.removeItem("ecency_nostr_pr_" + activeUsername);
     queryClient.setQueryData([NostrQueries.PUBLIC_KEY, activeUsername], "");
     queryClient.setQueryData([NostrQueries.PRIVATE_KEY, activeUsername], "");
     queryClient.setQueryData([ChatQueries.JOINED_CHANNELS, activeUsername], []);
