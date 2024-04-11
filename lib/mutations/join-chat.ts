@@ -24,7 +24,7 @@ export function useJoinChat(
   meta?: Record<string, unknown>,
 ) {
   const queryClient = useQueryClient();
-  const { activeUsername } = useContext(ChatContext);
+  const { activeUsername, storage } = useContext(ChatContext);
 
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
@@ -37,7 +37,7 @@ export function useJoinChat(
     ["chat-join-chat"],
     async (pin: string) => {
       const keys = createNoStrAccount();
-      localStorage.setItem("ecency_nostr_pr_" + activeUsername, pin);
+      storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
       const initialVector = crypto.randomBytes(16);
       const encryptedKey = EncryptionTools.encrypt(
