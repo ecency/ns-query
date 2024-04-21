@@ -5,6 +5,7 @@ import { DirectContact, useNostrPublishMutation } from "../nostr";
 import { Kind } from "nostr-tools";
 import { ChatQueries } from "../queries";
 import { updateContactsBasedOnResult } from "./utils";
+import { ContactsTagsBuilder } from "../utils";
 
 export function usePinContact() {
   const queryClient = useQueryClient();
@@ -32,27 +33,12 @@ export function usePinContact() {
         ]) ?? [];
       console.debug("[ns-query] Updating direct contact pin", contact, pinned);
 
-      const contactTags = directContacts.map((c) => [
-        "p",
-        c.pubkey,
-        "",
-        c.name,
-      ]);
-      const pinTags = directContacts
-        .filter((c) => contact.pubkey !== c.pubkey)
-        .map((c) => ["pinned", c.pubkey, c.pinned ? "true" : "false"]);
-      const lastSeenTags = directContacts.map((c) => [
-        "lastSeenDate",
-        c.pubkey,
-        c.lastSeenDate?.getTime().toString() ?? "",
-      ]);
-
       await publishDirectContact({
         tags: [
-          ...contactTags,
-          ...lastSeenTags,
-          ...pinTags,
-          ["pinned", contact.pubkey, pinned ? "true" : "false"],
+          ...ContactsTagsBuilder.buildContactsTags(directContacts),
+          ...ContactsTagsBuilder.buildLastSeenTags(directContacts),
+          ...ContactsTagsBuilder.buildPinTags(directContacts, contact),
+          ContactsTagsBuilder.buildPinTag(contact),
         ],
         eventMetadata: "",
       });

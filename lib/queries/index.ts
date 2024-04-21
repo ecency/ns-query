@@ -11,3 +11,4 @@ export * from "./unread-count-query";
 export * from "./joined-community-team-query";
 export * from "./channel-muted-users-query";
 export * from "./channel-hidden-messages-query";
+export * from "./non-direct-contacts-query";

@@ -16,3 +16,5 @@ export * from "./is-community";
 export * from "./useEffectOnce";
 export * from "./useMount";
 export * from "./useTimeoutFn";
+export * from "./channels-tags-builder";
+export * from "./contacts-tags-builder";

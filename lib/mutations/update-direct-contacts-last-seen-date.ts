@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
 import { updateContactsBasedOnResult } from "./utils";
+import { ContactsTagsBuilder } from "../utils";
 
 export function useUpdateDirectContactsLastSeenDate() {
   const queryClient = useQueryClient();
@@ -36,31 +37,12 @@ export function useUpdateDirectContactsLastSeenDate() {
         lastSeenDate,
       );
 
-      const contactTags = directContacts.map((c) => [
-        "p",
-        c.pubkey,
-        "",
-        c.name,
-      ]);
-      const pinTags = directContacts.map((c) => [
-        "pinned",
-        c.pubkey,
-        c.pinned ? "true" : "false",
-      ]);
-      const lastSeenTags = directContacts
-        .filter((c) => contact.pubkey !== c.pubkey)
-        .map((c) => [
-          "lastSeenDate",
-          c.pubkey,
-          c.lastSeenDate?.getTime().toString() ?? "",
-        ]);
-
       await publishDirectContact({
         tags: [
-          ...contactTags,
-          ...lastSeenTags,
-          ...pinTags,
-          ["lastSeenDate", contact.pubkey, lastSeenDate.getTime().toString()],
+          ...ContactsTagsBuilder.buildContactsTags(directContacts),
+          ...ContactsTagsBuilder.buildLastSeenTags(directContacts, contact),
+          ...ContactsTagsBuilder.buildPinTags(directContacts),
+          ContactsTagsBuilder.buildLastSeenTag(contact),
         ],
         eventMetadata: "",
       });

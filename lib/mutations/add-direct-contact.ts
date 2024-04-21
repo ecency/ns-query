@@ -4,6 +4,7 @@ import { DirectContact, useNostrPublishMutation } from "../nostr";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { ChatContext } from "../chat-context-provider";
+import { ContactsTagsBuilder } from "../utils";
 
 export function useAddDirectContact() {
   const { activeUsername } = useContext(ChatContext);
@@ -28,40 +29,23 @@ export function useAddDirectContact() {
         (c) => c.name === contact.name && c.pubkey === contact.pubkey,
       );
 
-      if (!hasInDirectContactsAlready) {
-        const contactTags = (directContacts ?? []).map((c) => [
-          "p",
-          c.pubkey,
-          "",
-          c.name,
-        ]);
-        const lastSeenTags = (directContacts ?? [])
-          .filter((c) => contact.pubkey !== c.pubkey)
-          .map((c) => [
-            "lastSeenDate",
-            c.pubkey,
-            c.lastSeenDate?.getTime().toString() ?? "",
-          ]);
-
-        await publishDirectContact({
-          tags: [
-            ...contactTags,
-            ...lastSeenTags,
-            ["p", contact.pubkey, "", contact.name],
-            [
-              "lastSeenDate",
-              contact.pubkey,
-              contact.lastSeenDate?.getTime().toString() ?? "",
-            ],
-          ],
-          eventMetadata: "",
-        });
-        console.debug("[ns-query] Added direct contact to list", contact);
-        return contact;
-      } else {
+      if (hasInDirectContactsAlready) {
         console.debug("[ns-query] Direct contact exists already", contact);
+        return;
       }
-      return;
+
+      await publishDirectContact({
+        tags: [
+          ...ContactsTagsBuilder.buildContactsTags(directContacts),
+          ...ContactsTagsBuilder.buildLastSeenTags(directContacts, contact),
+          ...ContactsTagsBuilder.buildPinTags(directContacts),
+          ContactsTagsBuilder.buildContactTag(contact),
+          ContactsTagsBuilder.buildLastSeenTag(contact),
+        ],
+        eventMetadata: "",
+      });
+      console.debug("[ns-query] Added direct contact to list", contact);
+      return contact;
     },
     {
       onSuccess: (contact) => {
