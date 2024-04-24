@@ -13,7 +13,7 @@ import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { isCommunity } from "../utils";
 import { Kind } from "nostr-tools";
-import { updateMessageStatusInQuery } from "./utils";
+import { MessagesQueryUtil } from "./utils";
 
 export function useResendMessage(
   currentChannel?: Channel,
@@ -54,7 +54,7 @@ export function useResendMessage(
     },
     {
       onSuccess: (message) => {
-        updateMessageStatusInQuery(
+        MessagesQueryUtil.updateMessageStatusInQuery(
           queryClient,
           message,
           0,
@@ -69,7 +69,7 @@ export function useResendMessage(
             Kind.EncryptedDirectMessage | Kind.ChannelMessage
           >(error.event, publicKey!!, privateKey!!)!!;
 
-          updateMessageStatusInQuery(
+          MessagesQueryUtil.updateMessageStatusInQuery(
             queryClient,
             message,
             2,

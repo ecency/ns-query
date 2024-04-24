@@ -12,7 +12,7 @@ import { useAddDirectContact } from "./add-direct-contact";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { Kind } from "nostr-tools";
-import { updateMessageStatusInQuery } from "./utils";
+import { MessagesQueryUtil } from "./utils";
 
 interface Payload {
   message: string;
@@ -67,10 +67,11 @@ export function useSendMessage(
     },
     {
       onSuccess: (message) => {
-        updateMessageStatusInQuery(
+        message.sent = 0;
+
+        MessagesQueryUtil.pushMessageToQueryData(
           queryClient,
           message,
-          0,
           activeUsername,
           currentChannel?.id ?? currentContact?.pubkey,
         );
@@ -82,7 +83,7 @@ export function useSendMessage(
             Kind.EncryptedDirectMessage | Kind.ChannelMessage
           >(error.event, publicKey!!, privateKey!!)!!;
 
-          updateMessageStatusInQuery(
+          MessagesQueryUtil.updateMessageStatusInQuery(
             queryClient,
             message,
             2,

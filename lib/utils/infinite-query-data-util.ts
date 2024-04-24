@@ -50,11 +50,11 @@ export namespace InfiniteQueryDataUtil {
       return data;
     }
 
-    const newPages = [...data.pages];
-    newPages[0].push(element);
     return {
       ...data,
-      pages: newPages,
+      pages: data.pages.map((page, index) =>
+        index === 0 ? [...page, element] : page,
+      ),
     };
   }
 

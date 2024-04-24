@@ -8,7 +8,6 @@ interface BaseMessage {
 
 export interface PublicMessage extends BaseMessage {
   root: string;
-  children?: PublicMessage[];
   mentions: string[];
   sent?: number;
 }
@@ -16,9 +15,10 @@ export interface PublicMessage extends BaseMessage {
 export interface DirectMessage extends BaseMessage {
   root?: string;
   peer: string;
-  children?: DirectMessage[];
   decrypted: boolean;
   sent?: number;
+  parentMessage?: DirectMessage;
+  parentMessageId?: string;
 }
 
 export type Message = PublicMessage | DirectMessage;
