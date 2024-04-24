@@ -27,9 +27,9 @@ This repository contains react-query based SDK for Ececny vision and mobile proj
    * _Requirements – current user and its credentials_
 5. [Messages query](lib/queries/messages-query.ts) – use this query for fetching channel or contact messages based on their username
    * _Requirements – current user and its credentials_
-   * _Note – this query are invalidating each N seconds periodically to keep messages fresh_
+   * ~~_Note – this query are invalidating each N seconds periodically to keep messages fresh_~~
 6. ~~[Joined community team query](lib/queries/nostr-joined-community-team-query.ts) – use this query for fetching community team member which joined to chats and assigned to moderation team~~
-   * _Requirements – current user and its credentials_
+   ~~* _Requirements – current user and its credentials_~~
 7. [Created channels query](lib/queries/created-channels-query.ts) – use this query for fetching created channels by current Nostr account
    * _Requirements – current user and its credentials_
 8. [Joined channels query](lib/queries/joined-channels-query.ts) – use this query for fetching all channels where current Nostr account was joined
