@@ -9,11 +9,11 @@ import {
   useNostrSendDirectMessage,
   useNostrSendPublicMessage,
 } from "../nostr";
-import { ChatQueries, useMessagesQuery } from "../queries";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { isCommunity } from "../utils";
 import { Kind } from "nostr-tools";
+import { updateMessageStatusInQuery } from "./utils";
 
 export function useResendMessage(
   currentChannel?: Channel,
@@ -24,7 +24,6 @@ export function useResendMessage(
 
   const { receiverPubKey, activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
-  const { data: messages } = useMessagesQuery(currentContact, currentChannel);
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
     privateKey!!,
@@ -55,19 +54,12 @@ export function useResendMessage(
     },
     {
       onSuccess: (message) => {
-        message.sent = 0;
-        queryClient.setQueryData(
-          [
-            ChatQueries.MESSAGES,
-            activeUsername,
-            currentChannel?.id ?? currentContact?.pubkey,
-          ],
-          [
-            ...messages.filter(
-              (m) => m.content !== message.content && m.sent !== 2,
-            ),
-            message,
-          ],
+        updateMessageStatusInQuery(
+          queryClient,
+          message,
+          0,
+          activeUsername,
+          currentChannel?.id ?? currentContact?.pubkey,
         );
         onSuccess?.();
       },
@@ -76,19 +68,13 @@ export function useResendMessage(
           const message = await convertEvent<
             Kind.EncryptedDirectMessage | Kind.ChannelMessage
           >(error.event, publicKey!!, privateKey!!)!!;
-          message.sent = 2;
-          queryClient.setQueryData(
-            [
-              ChatQueries.MESSAGES,
-              activeUsername,
-              currentChannel?.id ?? currentContact?.pubkey,
-            ],
-            [
-              ...messages.filter(
-                (m) => m.content !== message.content && m.sent !== 2,
-              ),
-              message,
-            ],
+
+          updateMessageStatusInQuery(
+            queryClient,
+            message,
+            2,
+            activeUsername,
+            currentChannel?.id ?? currentContact?.pubkey,
           );
         }
       },

@@ -16,3 +16,4 @@ export * from "./is-community";
 export * from "./useEffectOnce";
 export * from "./useMount";
 export * from "./useTimeoutFn";
+export * from "./infinite-query-data-util";
