@@ -16,27 +16,33 @@ export function useFindAndAssignParentMessage() {
   );
 
   return useCallback(
-    async (message: DirectMessage) => {
-      if (!message.parentMessageId) {
-        return;
-      }
-      const [parentMessageEncrypted] = await findMessagesByIds([
+    async (messages: DirectMessage[]) => {
+      const messagesWithParent = messages.filter((m) => m.parentMessageId);
+      const requiredForFetchParent = messagesWithParent.filter((message) =>
+        messages.every((m) => m.parentMessageId !== message.id),
+      );
+
+      const parentMessagesEncrypted = await findMessagesByIds([
         {
           kinds: [Kind.EncryptedDirectMessage],
-          "#e": [message.parentMessageId],
+          ids: requiredForFetchParent.map((m) => m.parentMessageId!!),
         },
       ]);
+      const parentMessages = await Promise.all(
+        parentMessagesEncrypted.map(
+          (e) =>
+            convertEvent<Kind.EncryptedDirectMessage>(
+              e,
+              publicKey!!,
+              privateKey!!,
+            ) as Promise<DirectMessage>,
+        ),
+      );
 
-      if (parentMessageEncrypted) {
-        const parentMessage = (await convertEvent<Kind.EncryptedDirectMessage>(
-          parentMessageEncrypted,
-          publicKey!!,
-          privateKey!!,
-        )) as DirectMessage;
-
-        if (parentMessage) {
-          message.parentMessage = parentMessage;
-        }
+      for (const message of messagesWithParent) {
+        message.parentMessage = [...parentMessages, ...messages].find(
+          (m) => m.id === message.parentMessageId,
+        );
       }
     },
     [findMessagesByIds, privateKey, publicKey],

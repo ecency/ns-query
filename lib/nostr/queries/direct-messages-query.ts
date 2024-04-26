@@ -39,11 +39,10 @@ export function useDirectMessagesQuery(contact?: DirectContact) {
           publicKey!!,
           privateKey!!,
         )) as DirectMessage;
-
-        await findAndAssignParentMessage(message);
-
         results.push(message);
       }
+
+      await findAndAssignParentMessage(results);
       return results;
     },
     {

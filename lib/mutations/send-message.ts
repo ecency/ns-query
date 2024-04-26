@@ -4,6 +4,7 @@ import { ChatContext } from "../chat-context-provider";
 import {
   Channel,
   DirectContact,
+  Message,
   useKeysQuery,
   useNostrSendDirectMessage,
   useNostrSendPublicMessage,
@@ -18,7 +19,7 @@ interface Payload {
   message: string;
   forwardedFrom?: string;
   // Indicates reply parent message ID
-  parentMessageId?: string;
+  parentMessage?: Message;
 }
 
 export function useSendMessage(
@@ -44,7 +45,7 @@ export function useSendMessage(
 
   return useMutation(
     ["chats/send-message"],
-    async ({ forwardedFrom, message, parentMessageId }: Payload) => {
+    async ({ forwardedFrom, message, parentMessage }: Payload) => {
       if (!message || message.includes("Uploading")) {
         throw new Error(
           "[Chat][SendMessage] – empty message or has uploading file",
@@ -58,16 +59,27 @@ export function useSendMessage(
       }
 
       if (currentChannel) {
-        return sendPublicMessage({ message, forwardedFrom });
+        return [
+          await sendPublicMessage({ message, forwardedFrom }),
+          parentMessage,
+        ] as const;
       } else if (currentContact) {
-        return sendDirectMessage({ message, forwardedFrom, parentMessageId });
+        return [
+          await sendDirectMessage({
+            message,
+            forwardedFrom,
+            parentMessageId: parentMessage?.id,
+          }),
+          parentMessage,
+        ] as const;
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
       }
     },
     {
-      onSuccess: (message) => {
+      onSuccess: ([message, parentMessage]) => {
         message.sent = 0;
+        message.parentMessage = parentMessage;
 
         MessagesQueryUtil.pushMessageToQueryData(
           queryClient,
