@@ -1,11 +1,13 @@
 import { Kind } from "nostr-tools";
 import {
   Channel,
+  Profile,
   useKeysQuery,
   useNostrGetUserProfileQuery,
   useNostrPublishMutation,
 } from "../nostr";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChannelsTagsBuilder } from "../utils";
 
 export function useUpdateChannelLastSeenDate() {
   const queryClient = useQueryClient();
@@ -34,45 +36,53 @@ export function useUpdateChannelLastSeenDate() {
         lastSeenDate,
       );
       const profile = activeUserNostrProfiles?.[0];
-      if (profile) {
-        const lastSeenRecords = profile.channelsLastSeenDate ?? {};
-        lastSeenRecords[channel.id] = lastSeenDate;
-
-        const lastSeenTags = Object.entries(lastSeenRecords).map(
-          ([channelId, lastSeenTime]) => [
-            "lastSeenDate",
-            channelId,
-            lastSeenTime.getTime().toString(),
-          ],
+      if (!profile) {
+        throw new Error(
+          "[ns-query] Could not find active user profile in Nostr",
         );
-
-        await updateProfile({
-          tags: [["p", publicKey!!], ...lastSeenTags],
-          eventMetadata: profile,
-        });
-        console.debug(
-          "[ns-query] Channel's last seen date updated",
-          channel,
-          lastSeenDate,
-        );
-
-        return lastSeenRecords;
       }
-      throw new Error("[ns-query] Could not find active user profile in Nostr");
+
+      const lastSeenRecords = profile.channelsLastSeenDate ?? {};
+      lastSeenRecords[channel.id] = lastSeenDate;
+
+      const lastSeenTags = ChannelsTagsBuilder.buildLastSeenTags(
+        profile,
+        channel.id,
+        lastSeenDate,
+      );
+
+      await updateProfile({
+        tags: [["p", publicKey!!], ...lastSeenTags],
+        eventMetadata: profile,
+      });
+      console.debug(
+        "[ns-query] Channel's last seen date updated",
+        channel,
+        lastSeenDate,
+      );
+
+      return lastSeenRecords;
     },
     {
       onSuccess: (lastSeenRecords) => {
-        if (lastSeenRecords) {
-          queryClient.setQueryData(
-            ["chats/nostr-get-user-profile", publicKey],
-            [
+        if (!lastSeenRecords) {
+          return;
+        }
+        queryClient.setQueryData<Profile[] | undefined>(
+          ["chats/nostr-get-user-profile", publicKey],
+          (data) => {
+            if (!data) {
+              return data;
+            }
+
+            return [
               {
-                ...activeUserNostrProfiles?.[0],
+                ...data[0],
                 channelsLastSeenDate: lastSeenRecords,
               },
-            ],
-          );
-        }
+            ];
+          },
+        );
       },
     },
   );
