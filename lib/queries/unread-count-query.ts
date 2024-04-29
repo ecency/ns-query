@@ -12,7 +12,7 @@ export function useUnreadCountQuery(
   contact?: DirectContact,
   channel?: Channel,
 ) {
-  const { data: messages } = useMessagesQuery(contact, channel);
+  const messages = useMessagesQuery(contact, channel);
   const { publicKey } = useKeysQuery();
   const { data: activeUserNostrProfiles } =
     useNostrGetUserProfileQuery(publicKey);

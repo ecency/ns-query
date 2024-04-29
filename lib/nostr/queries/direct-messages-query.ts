@@ -1,15 +1,18 @@
 import { Kind } from "nostr-tools";
 import { useContext } from "react";
 import { ChatContext } from "../../chat-context-provider";
-import { DirectContact, Message } from "../types";
+import { DirectContact, DirectMessage, Message } from "../types";
 import { useNostrInfiniteFetchQuery } from "../core/nostr-infinite-fetch-query";
 import { NostrQueries } from "./queries";
 import { convertEvent } from "../utils/event-converter";
 import { useKeysQuery } from "../core";
+import { useFindAndAssignParentMessage } from "./use-find-and-assign-parent-message";
 
 export function useDirectMessagesQuery(contact?: DirectContact) {
   const { activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
+
+  const findAndAssignParentMessage = useFindAndAssignParentMessage();
 
   return useNostrInfiniteFetchQuery<Message[]>(
     [NostrQueries.DIRECT_MESSAGES, activeUsername, contact?.pubkey],
@@ -27,17 +30,21 @@ export function useDirectMessagesQuery(contact?: DirectContact) {
         limit: 25,
       },
     ],
-    async (events) =>
-      Promise.all(
-        events.map(
-          (event) =>
-            convertEvent<Kind.EncryptedDirectMessage>(
-              event,
-              publicKey!!,
-              privateKey!!,
-            )!!,
-        ),
-      ),
+    async (events) => {
+      const results: DirectMessage[] = [];
+
+      for (const event of events) {
+        const message = (await convertEvent<Kind.EncryptedDirectMessage>(
+          event,
+          publicKey!!,
+          privateKey!!,
+        )) as DirectMessage;
+        results.push(message);
+      }
+
+      await findAndAssignParentMessage(results);
+      return results;
+    },
     {
       enabled:
         !!contact?.pubkey && !!activeUsername && !!privateKey && !!publicKey,

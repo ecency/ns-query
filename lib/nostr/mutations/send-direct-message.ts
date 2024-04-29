@@ -4,6 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useFindHealthyRelayQuery } from "./find-healthy-relay";
 import { convertEvent } from "../utils/event-converter";
 
+interface Payload {
+  message: string;
+  forwardedFrom?: string;
+  parentMessageId?: string;
+}
+
 export function useNostrSendDirectMessage(
   ownerPrivateKey: string,
   destinationPublicKey?: string,
@@ -20,13 +26,7 @@ export function useNostrSendDirectMessage(
 
   return useMutation(
     ["chats/send-direct-message"],
-    async ({
-      message,
-      forwardedFrom,
-    }: {
-      message: string;
-      forwardedFrom?: string;
-    }) => {
+    async ({ message, forwardedFrom, parentMessageId }: Payload) => {
       if (!publicKey || !privateKey || !destinationPublicKey) {
         throw new Error(
           "[Chat][Nostr] – attempting to send direct message with no private, destination or public key",
@@ -49,6 +49,10 @@ export function useNostrSendDirectMessage(
 
       if (forwardedFrom) {
         tags.push(["fwd", forwardedFrom]);
+      }
+
+      if (parentMessageId) {
+        tags.push(["pm", parentMessageId]);
       }
 
       const event = await publishEncryptedMessage({

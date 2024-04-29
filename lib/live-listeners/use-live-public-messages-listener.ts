@@ -8,9 +8,10 @@ import {
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { ChatQueries, useChannelsQuery } from "../queries";
+import { useChannelsQuery } from "../queries";
 import { useContext, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
+import { InfiniteQueryDataUtil } from "../utils";
 
 export function useLivePublicMessagesListener() {
   const queryClient = useQueryClient();
@@ -36,40 +37,23 @@ export function useLivePublicMessagesListener() {
         return;
       }
       const channel = channels?.find((ch) => ch.id === message.root);
-
       if (!channel) {
         return;
       }
 
-      const previousData = queryClient.getQueryData<
-        InfiniteData<PublicMessage[]>
-      >([NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id]);
-
-      if (previousData) {
-        const dump: InfiniteData<PublicMessage[]> = {
-          ...previousData,
-          pages: [...previousData.pages],
-        };
-
-        // Ignore duplicates
-        if (dump.pages[0].some((m) => m.id === message.id)) {
-          return;
-        }
-
-        dump.pages[0] = [...dump.pages[0], message as PublicMessage];
-        queryClient.setQueryData(
-          [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
-          dump,
-        );
-        await queryClient.invalidateQueries([
-          ChatQueries.MESSAGES,
-          activeUsername,
-          channel.id,
-        ]);
-      }
-
+      queryClient.setQueryData<InfiniteData<PublicMessage[]>>(
+        [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel.id],
+        (data) =>
+          InfiniteQueryDataUtil.safeDataUpdate(data, (d) =>
+            InfiniteQueryDataUtil.pushElementToFirstPage(
+              d,
+              message as PublicMessage,
+              (m) => m.id === message.id,
+            ),
+          ),
+      );
       await queryClient.invalidateQueries([
-        ChatQueries.LAST_MESSAGE,
+        NostrQueries.PUBLIC_MESSAGES,
         activeUsername,
         channel.id,
       ]);

@@ -4,21 +4,22 @@ interface BaseMessage {
   creator: string;
   created: number;
   forwardedFrom?: string;
+  parentMessageId?: string;
 }
 
 export interface PublicMessage extends BaseMessage {
   root: string;
-  children?: PublicMessage[];
   mentions: string[];
   sent?: number;
+  parentMessage?: PublicMessage;
 }
 
 export interface DirectMessage extends BaseMessage {
   root?: string;
   peer: string;
-  children?: DirectMessage[];
   decrypted: boolean;
   sent?: number;
+  parentMessage?: DirectMessage;
 }
 
 export type Message = PublicMessage | DirectMessage;

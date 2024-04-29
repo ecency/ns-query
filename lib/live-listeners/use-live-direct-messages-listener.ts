@@ -5,28 +5,23 @@ import {
   NostrQueries,
   useKeysQuery,
   useLiveListener,
-  useNostrFetchMutation,
 } from "../nostr";
 import { Kind } from "nostr-tools";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { useAddDirectContact } from "../mutations";
 import { ChatQueries } from "../queries";
 import { useContext, useMemo } from "react";
 import { ChatContext } from "../chat-context-provider";
+import { useAddDirectContactInListener } from "./use-add-direct-contact-in-listener";
+import { InfiniteQueryDataUtil } from "../utils";
 
 export function useLiveDirectMessagesListener() {
   const queryClient = useQueryClient();
-
   const { activeUsername } = useContext(ChatContext);
 
-  const { publicKey, privateKey } = useKeysQuery();
+  const addContact = useAddDirectContactInListener();
 
-  const { mutateAsync: addDirectContact } = useAddDirectContact();
-  const { mutateAsync: getAccountMetadata } = useNostrFetchMutation(
-    ["chats/nostr-get-user-profile"],
-    [],
-  );
+  const { publicKey, privateKey } = useKeysQuery();
 
   const filters = useMemo(
     () =>
@@ -44,24 +39,6 @@ export function useLiveDirectMessagesListener() {
         : [],
     [publicKey],
   );
-
-  const addContact = async (pubkey: string) => {
-    const data = await getAccountMetadata([
-      {
-        kinds: [Kind.Metadata],
-        authors: [pubkey],
-      },
-    ]);
-    if (data.length > 0) {
-      const nextContact: DirectContact = {
-        pubkey,
-        name: JSON.parse(data[0]?.content)?.name ?? "",
-      };
-      await addDirectContact(nextContact);
-      return nextContact;
-    }
-    return;
-  };
 
   useLiveListener<Message>(
     filters,
@@ -101,27 +78,20 @@ export function useLiveDirectMessagesListener() {
 
       console.debug("[ns-query] New message assigned", message, contact);
       const directMessage = message as DirectMessage;
-      const previousData = queryClient.getQueryData<
-        InfiniteData<DirectMessage[]>
-      >([NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey]);
 
-      const dump: InfiniteData<DirectMessage[]> = {
-        pages: [...(previousData?.pages ?? [])],
-        pageParams: [...(previousData?.pageParams ?? [])],
-      };
-
-      // Ignore duplicates
-      if (dump.pages[0].some((m) => m.id === message.id)) {
-        return;
-      }
-      dump.pages[0] = [...dump.pages[0], directMessage];
-
-      queryClient.setQueryData(
+      queryClient.setQueryData<InfiniteData<DirectMessage[]>>(
         [NostrQueries.DIRECT_MESSAGES, activeUsername, contact.pubkey],
-        dump,
+        (data) =>
+          InfiniteQueryDataUtil.safeDataUpdate(data, (d) =>
+            InfiniteQueryDataUtil.pushElementToFirstPage(
+              d,
+              directMessage,
+              (m) => m.id === message.id,
+            ),
+          ),
       );
       await queryClient.invalidateQueries([
-        ChatQueries.MESSAGES,
+        NostrQueries.DIRECT_MESSAGES,
         activeUsername,
         contact.pubkey,
       ]);

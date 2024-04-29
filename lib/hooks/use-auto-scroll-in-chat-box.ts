@@ -6,7 +6,7 @@ export function useAutoScrollInChatBox(
   currentContact?: DirectContact,
   currentChannel?: Channel,
 ) {
-  const { data } = useMessagesQuery(currentContact, currentChannel);
+  const data = useMessagesQuery(currentContact, currentChannel);
 
   useLayoutEffect(() => {
     if (data.length > 0) {

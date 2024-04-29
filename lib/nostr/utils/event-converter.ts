@@ -45,6 +45,8 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
         const receiver = findTagValue(event, "p")!!;
         const peer = receiver === publicKey ? event.pubkey : receiver;
         const forwardedFrom = event.tags.find(([t]) => t === "fwd")?.[1];
+        const parentMessageId = event.tags.find(([t]) => t === "pm")?.[1];
+
         const encryptedMessage = {
           id: event.id,
           root: filterTagValue(event, "e").find(
@@ -56,6 +58,7 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
           decrypted: false,
           sent: 1,
           forwardedFrom,
+          parentMessageId,
         };
 
         if (!privateKey) {

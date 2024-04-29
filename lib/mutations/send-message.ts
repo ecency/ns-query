@@ -4,15 +4,23 @@ import { ChatContext } from "../chat-context-provider";
 import {
   Channel,
   DirectContact,
+  Message,
   useKeysQuery,
   useNostrSendDirectMessage,
   useNostrSendPublicMessage,
 } from "../nostr";
 import { useAddDirectContact } from "./add-direct-contact";
-import { ChatQueries, useMessagesQuery } from "../queries";
 import { PublishNostrError } from "../nostr/errors";
 import { convertEvent } from "../nostr/utils/event-converter";
 import { Kind } from "nostr-tools";
+import { MessagesQueryUtil } from "./utils";
+
+interface Payload {
+  message: string;
+  forwardedFrom?: string;
+  // Indicates reply parent message ID
+  parentMessage?: Message;
+}
 
 export function useSendMessage(
   currentChannel?: Channel,
@@ -23,7 +31,6 @@ export function useSendMessage(
 
   const { activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
-  const { data: messages } = useMessagesQuery(currentContact, currentChannel);
 
   const { mutateAsync: sendDirectMessage } = useNostrSendDirectMessage(
     privateKey!!,
@@ -38,13 +45,7 @@ export function useSendMessage(
 
   return useMutation(
     ["chats/send-message"],
-    async ({
-      forwardedFrom,
-      message,
-    }: {
-      message: string;
-      forwardedFrom?: string;
-    }) => {
+    async ({ forwardedFrom, message, parentMessage }: Payload) => {
       if (!message || message.includes("Uploading")) {
         throw new Error(
           "[Chat][SendMessage] – empty message or has uploading file",
@@ -58,26 +59,34 @@ export function useSendMessage(
       }
 
       if (currentChannel) {
-        return sendPublicMessage({ message, forwardedFrom });
+        return [
+          await sendPublicMessage({ message, forwardedFrom }),
+          parentMessage,
+        ] as const;
       } else if (currentContact) {
-        return sendDirectMessage({ message, forwardedFrom });
+        return [
+          await sendDirectMessage({
+            message,
+            forwardedFrom,
+            parentMessageId: parentMessage?.id,
+          }),
+          parentMessage,
+        ] as const;
       } else {
         throw new Error("[Chat][SendMessage] – no receiver");
       }
     },
     {
-      onSuccess: (message) => {
-        if (message) {
-          message.sent = 0;
-          queryClient.setQueryData(
-            [
-              ChatQueries.MESSAGES,
-              activeUsername,
-              currentChannel?.id ?? currentContact?.pubkey,
-            ],
-            [...messages, message],
-          );
-        }
+      onSuccess: ([message, parentMessage]) => {
+        message.sent = 0;
+        message.parentMessage = parentMessage;
+
+        MessagesQueryUtil.pushMessageToQueryData(
+          queryClient,
+          message,
+          activeUsername,
+          currentChannel?.id ?? currentContact?.pubkey,
+        );
         onSuccess?.();
       },
       onError: async (error: PublishNostrError | Error) => {
@@ -85,14 +94,13 @@ export function useSendMessage(
           const message = await convertEvent<
             Kind.EncryptedDirectMessage | Kind.ChannelMessage
           >(error.event, publicKey!!, privateKey!!)!!;
-          message.sent = 2;
-          queryClient.setQueryData(
-            [
-              ChatQueries.MESSAGES,
-              activeUsername,
-              currentChannel?.id ?? currentContact?.pubkey,
-            ],
-            [...messages, message],
+
+          MessagesQueryUtil.updateMessageStatusInQuery(
+            queryClient,
+            message,
+            2,
+            activeUsername,
+            currentChannel?.id ?? currentContact?.pubkey,
           );
         }
       },
