@@ -60,7 +60,11 @@ export function useSendMessage(
 
       if (currentChannel) {
         return [
-          await sendPublicMessage({ message, forwardedFrom }),
+          await sendPublicMessage({
+            message,
+            forwardedFrom,
+            parentMessageId: parentMessage?.id,
+          }),
           parentMessage,
         ] as const;
       } else if (currentContact) {

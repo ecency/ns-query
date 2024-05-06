@@ -88,6 +88,8 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
         .map((mention) => mention?.[1])
         .filter((mention) => !!mention);
       const forwardedFrom = event.tags.find(([t]) => t === "fwd")?.[1];
+      const parentMessageId = event.tags.find(([t]) => t === "pm")?.[1];
+
       if (!root) return null;
       return event.content
         ? {
@@ -99,6 +101,7 @@ export function convertEvent<KIND extends keyof EventConverterResult>(
             forwardedFrom,
             created: event.created_at,
             sent: 1,
+            parentMessageId,
           }
         : (null as any);
     case Kind.Metadata:
