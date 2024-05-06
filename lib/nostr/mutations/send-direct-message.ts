@@ -3,6 +3,7 @@ import { Kind, nip04 } from "nostr-tools";
 import { useMutation } from "@tanstack/react-query";
 import { useFindHealthyRelayQuery } from "./find-healthy-relay";
 import { convertEvent } from "../utils/event-converter";
+import { MessagesManagement } from "../utils";
 
 interface Payload {
   message: string;
@@ -38,25 +39,20 @@ export function useNostrSendDirectMessage(
         destinationPublicKey,
         message,
       );
-      const tags = [["p", destinationPublicKey]];
+      const tagsBuilder = MessagesManagement.MessagesTagsBuilder.shared
+        .withDestination(destinationPublicKey)
+        .withForwardedFrom(forwardedFrom)
+        .withReferenceTo(parentMessageId);
 
       if (parent) {
         const relay = await findHealthyRelay(parent);
         if (relay) {
-          tags.push(["e", parent, relay, "root"]);
+          tagsBuilder.withRoot(parent, relay);
         }
       }
 
-      if (forwardedFrom) {
-        tags.push(["fwd", forwardedFrom]);
-      }
-
-      if (parentMessageId) {
-        tags.push(["pm", parentMessageId]);
-      }
-
       const event = await publishEncryptedMessage({
-        tags,
+        tags: tagsBuilder.build(),
         eventMetadata: encryptedMessage,
       });
       return convertEvent<Kind.EncryptedDirectMessage>(

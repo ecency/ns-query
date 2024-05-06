@@ -8,6 +8,7 @@ import { ChatContext } from "../../chat-context-provider";
 import { useNostrFetchMutation } from "../core";
 import { ChatQueries } from "../../queries";
 import { convertHiddenMessagesEvents, convertMutedUsersEvents } from "../utils";
+import { useFindAndAssignParentPublicMessage } from "./use-find-and-assign-parent-public-message";
 
 /**
  * Use this query to retrieve filtered channel messages
@@ -27,6 +28,7 @@ export function usePublicMessagesQuery(
     [ChatQueries.BLOCKED_USERS, activeUsername, channel?.id],
     [],
   );
+  const findAndAssignParentMessage = useFindAndAssignParentPublicMessage();
 
   return useNostrInfiniteFetchQuery<Message[]>(
     [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel?.id],
@@ -42,6 +44,8 @@ export function usePublicMessagesQuery(
       let messagesPage = events
         .map((event) => convertEvent(event))
         .filter((message) => !!message) as Message[];
+
+      await findAndAssignParentMessage(messagesPage);
 
       // 2. Fetch blocked users and filter only by community team members
       //    note: same behavior as in hidden messages

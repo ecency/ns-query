@@ -6,13 +6,13 @@ import { useNostrInfiniteFetchQuery } from "../core/nostr-infinite-fetch-query";
 import { NostrQueries } from "./queries";
 import { convertEvent } from "../utils/event-converter";
 import { useKeysQuery } from "../core";
-import { useFindAndAssignParentMessage } from "./use-find-and-assign-parent-message";
+import { useFindAndAssignParentDirectMessage } from "./use-find-and-assign-parent-direct-message";
 
 export function useDirectMessagesQuery(contact?: DirectContact) {
   const { activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
 
-  const findAndAssignParentMessage = useFindAndAssignParentMessage();
+  const findAndAssignParentMessage = useFindAndAssignParentDirectMessage();
 
   return useNostrInfiniteFetchQuery<Message[]>(
     [NostrQueries.DIRECT_MESSAGES, activeUsername, contact?.pubkey],

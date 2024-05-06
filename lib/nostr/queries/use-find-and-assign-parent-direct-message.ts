@@ -6,7 +6,7 @@ import { useKeysQuery, useNostrFetchMutation } from "../core";
 import { NostrQueries } from "./queries";
 import { ChatContext } from "../../chat-context-provider";
 
-export function useFindAndAssignParentMessage() {
+export function useFindAndAssignParentDirectMessage() {
   const { activeUsername } = useContext(ChatContext);
   const { privateKey, publicKey } = useKeysQuery();
 
