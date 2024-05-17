@@ -47,9 +47,10 @@ export function useNostrPublishMutation(
       }
     });
 
-  return useMutation(
-    key,
-    ({ eventMetadata, tags }: Payload) =>
+  return useMutation({
+    ...options,
+    mutationKey: key,
+    mutationFn: ({ eventMetadata, tags }: Payload) =>
       new Promise<Event>(async (resolve, reject) => {
         let signedEvent: Event | null;
         try {
@@ -105,6 +106,5 @@ export function useNostrPublishMutation(
         //   ),
         // );
       }),
-    options,
-  );
+  });
 }

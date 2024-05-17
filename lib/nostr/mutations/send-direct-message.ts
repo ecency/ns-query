@@ -25,9 +25,13 @@ export function useNostrSendDirectMessage(
   );
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
-  return useMutation(
-    ["chats/send-direct-message"],
-    async ({ message, forwardedFrom, parentMessageId }: Payload) => {
+  return useMutation({
+    mutationKey: ["chats/send-direct-message"],
+    mutationFn: async ({
+      message,
+      forwardedFrom,
+      parentMessageId,
+    }: Payload) => {
       if (!publicKey || !privateKey || !destinationPublicKey) {
         throw new Error(
           "[Chat][Nostr] – attempting to send direct message with no private, destination or public key",
@@ -61,5 +65,5 @@ export function useNostrSendDirectMessage(
         privateKey,
       )!!;
     },
-  );
+  });
 }

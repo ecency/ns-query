@@ -20,9 +20,13 @@ export function useNostrSendPublicMessage(channelId?: string, parent?: string) {
   );
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
-  return useMutation(
-    ["chats/send-public-message"],
-    async ({ message, forwardedFrom, parentMessageId }: Payload) => {
+  return useMutation({
+    mutationKey: ["chats/send-public-message"],
+    mutationFn: async ({
+      message,
+      forwardedFrom,
+      parentMessageId,
+    }: Payload) => {
       const root = parent || channelId;
 
       if (!root) {
@@ -47,5 +51,5 @@ export function useNostrSendPublicMessage(channelId?: string, parent?: string) {
       });
       return convertEvent<Kind.ChannelMessage>(event)!!;
     },
-  );
+  });
 }

@@ -27,9 +27,9 @@ export function useHideMessageInChannel(channel?: Channel) {
     () => {},
   );
 
-  return useMutation(
-    ["chats/hide-message-in-channel", channel?.name],
-    async ({ messageId, reason, status }: Payload) => {
+  return useMutation({
+    mutationKey: ["chats/hide-message-in-channel", channel?.name],
+    mutationFn: async ({ messageId, reason, status }: Payload) => {
       await hideMessageRequest.mutateAsync({
         eventMetadata: JSON.stringify({
           reason: reason ?? "Hidden by community team",
@@ -42,19 +42,17 @@ export function useHideMessageInChannel(channel?: Channel) {
       });
       return { messageId, status };
     },
-    {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries([
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [
           ChatQueries.HIDDEN_CHANNEL_MESSAGES,
           activeUsername,
           channel?.id,
-        ]);
-        await queryClient.invalidateQueries([
-          NostrQueries.PUBLIC_MESSAGES,
-          activeUsername,
-          channel?.id,
-        ]);
-      },
+        ],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel?.id],
+      });
     },
-  );
+  });
 }
