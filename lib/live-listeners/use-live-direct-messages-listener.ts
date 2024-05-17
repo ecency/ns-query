@@ -90,11 +90,11 @@ export function useLiveDirectMessagesListener() {
             ),
           ),
       );
-      await queryClient.invalidateQueries([
+      await queryClient.invalidateQueries({queryKey: [
         NostrQueries.DIRECT_MESSAGES,
         activeUsername,
         contact.pubkey,
-      ]);
+      ]});
     },
     { enabled: !!publicKey && !!privateKey },
   );
