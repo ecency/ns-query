@@ -8,11 +8,13 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   build: {
     target: ["es2015"],
+    sourcemap: true,
+    minify: false,
     lib: {
       entry: resolve(__dirname, "lib/index.ts"),
       name: "dist",
       fileName: "index",
-      formats: ["cjs"],
+      formats: ["esm", "cjs"],
     },
     rollupOptions: {
       external: [

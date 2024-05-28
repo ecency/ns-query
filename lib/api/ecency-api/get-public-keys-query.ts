@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import axios from "axios";
-import { useContext } from "react";
-import { ChatContext } from "../../chat-context-provider";
+import {useContext} from "react";
+import {ChatContext} from "../../chat-context-provider";
 
 export function useGetPublicKeysQuery(username?: string) {
   const { privateApiHost } = useContext(ChatContext);
