@@ -7,9 +7,14 @@ export function useSaveKeys() {
   const { privateApiHost, activeUsername, ecencyAccessToken } =
     useContext(ChatContext);
 
-  return useMutation(
-    ["private-api", "save-keys"],
-    async (data: { key: string; pubkey: string; iv: string; meta: any }) =>
+  return useMutation({
+    mutationKey: ["private-api", "save-keys"],
+    mutationFn: async (data: {
+      key: string;
+      pubkey: string;
+      iv: string;
+      meta: any;
+    }) =>
       axios
         .post<{ chat_keys: { key: string; pubkey: string; iv: string }[] }>(
           `${privateApiHost}/private-api/chats-add`,
@@ -19,5 +24,5 @@ export function useSaveKeys() {
           },
         )
         .then((resp) => resp.data.chat_keys),
-  );
+  });
 }

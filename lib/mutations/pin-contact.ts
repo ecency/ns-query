@@ -17,9 +17,9 @@ export function usePinContact() {
     () => {},
   );
 
-  return useMutation(
-    ["chats/nostr-update-direct-contacts-pins"],
-    async ({
+  return useMutation({
+    mutationKey: ["chats/nostr-update-direct-contacts-pins"],
+    mutationFn: async ({
       contact,
       pinned,
     }: {
@@ -46,12 +46,10 @@ export function usePinContact() {
       contact.pinned = pinned;
       return contact;
     },
-    {
-      onSuccess: (contact) => {
-        if (contact) {
-          updateContactsBasedOnResult(queryClient, activeUsername, contact);
-        }
-      },
+    onSuccess: (contact) => {
+      if (contact) {
+        updateContactsBasedOnResult(queryClient, activeUsername, contact);
+      }
     },
-  );
+  });
 }

@@ -26,35 +26,27 @@ export function useMuteUserInChannel(channel?: Channel) {
     () => {},
   );
 
-  return useMutation(
-    ["chats/mute-user-in-channel", channel?.name],
-    async ({ pubkey, reason, status }: Payload) => {
-      await muteUserRequest.mutateAsync(
-        {
-          eventMetadata: JSON.stringify({
-            reason: reason ?? "Muted by community team",
-          }),
-          tags: [
-            ["p", pubkey],
-            ["e", channel!.id, "channel"],
-            ["status", status.toString()],
-          ],
-        },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries([
-              NostrQueries.PUBLIC_MESSAGES,
-              activeUsername,
-              channel?.id,
-            ]);
-            queryClient.invalidateQueries([
-              ChatQueries.BLOCKED_USERS,
-              activeUsername,
-              channel?.id,
-            ]);
-          },
-        },
-      );
+  return useMutation({
+    mutationKey: ["chats/mute-user-in-channel", channel?.name],
+    mutationFn: async ({ pubkey, reason, status }: Payload) => {
+      await muteUserRequest.mutateAsync({
+        eventMetadata: JSON.stringify({
+          reason: reason ?? "Muted by community team",
+        }),
+        tags: [
+          ["p", pubkey],
+          ["e", channel!.id, "channel"],
+          ["status", status.toString()],
+        ],
+      });
     },
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [NostrQueries.PUBLIC_MESSAGES, activeUsername, channel?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [ChatQueries.BLOCKED_USERS, activeUsername, channel?.id],
+      });
+    },
+  });
 }

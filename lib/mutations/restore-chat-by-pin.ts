@@ -20,38 +20,41 @@ export function useRestoreChatByPin() {
   );
   const { mutateAsync: uploadKeys } = useSaveKeys();
 
-  return useMutation(["chats/restore-chat-by-pin"], async (pin: string) => {
-    if (!pin || !publicKey || !activeUserData) {
-      throw new Error(
-        "[Chat][Nostr] – no pin, public key or account information",
+  return useMutation({
+    mutationKey: ["chats/restore-chat-by-pin"],
+    mutationFn: async (pin: string) => {
+      if (!pin || !publicKey || !activeUserData) {
+        throw new Error(
+          "[Chat][Nostr] – no pin, public key or account information",
+        );
+      }
+
+      const { iv: initialVector, key: privateKey } = keys ?? {};
+
+      if (!initialVector || !privateKey) {
+        throw new Error("[Chat][Nostr] – no initial vector or private key");
+      }
+
+      const decryptedKey = EncryptionTools.decrypt(
+        privateKey,
+        pin,
+        Buffer.from(initialVector, "base64"),
       );
-    }
+      queryClient.setQueryData(
+        [NostrQueries.PRIVATE_KEY, activeUsername],
+        decryptedKey,
+      );
 
-    const { iv: initialVector, key: privateKey } = keys ?? {};
+      storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
-    if (!initialVector || !privateKey) {
-      throw new Error("[Chat][Nostr] – no initial vector or private key");
-    }
-
-    const decryptedKey = EncryptionTools.decrypt(
-      privateKey,
-      pin,
-      Buffer.from(initialVector, "base64"),
-    );
-    queryClient.setQueryData(
-      [NostrQueries.PRIVATE_KEY, activeUsername],
-      decryptedKey,
-    );
-
-    storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
-
-    await updateProfile({
-      tags: [["p", publicKey]],
-      eventMetadata: {
-        name: activeUsername!,
-        about: "",
-        picture: "",
-      },
-    });
+      await updateProfile({
+        tags: [["p", publicKey]],
+        eventMetadata: {
+          name: activeUsername!,
+          about: "",
+          picture: "",
+        },
+      });
+    },
   });
 }

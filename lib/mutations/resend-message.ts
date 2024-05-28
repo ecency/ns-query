@@ -35,9 +35,9 @@ export function useResendMessage(
     undefined,
   );
 
-  return useMutation(
-    ["chats/send-message"],
-    async (message: Message) => {
+  return useMutation({
+    mutationKey: ["chats/send-message"],
+    mutationFn: async (message: Message) => {
       if (!currentChannel && isCommunity(currentContact?.name)) {
         throw new Error(
           "[Chat][SendMessage] – provided user is community but channel not found",
@@ -52,32 +52,30 @@ export function useResendMessage(
         throw new Error("[Chat][SendMessage] – no receiver");
       }
     },
-    {
-      onSuccess: (message) => {
+    onSuccess: (message) => {
+      MessagesQueryUtil.updateMessageStatusInQuery(
+        queryClient,
+        message,
+        0,
+        activeUsername,
+        currentChannel?.id ?? currentContact?.pubkey,
+      );
+      onSuccess?.();
+    },
+    onError: async (error: PublishNostrError | Error) => {
+      if ("event" in error) {
+        const message = await convertEvent<
+          Kind.EncryptedDirectMessage | Kind.ChannelMessage
+        >(error.event, publicKey!!, privateKey!!)!!;
+
         MessagesQueryUtil.updateMessageStatusInQuery(
           queryClient,
           message,
-          0,
+          2,
           activeUsername,
           currentChannel?.id ?? currentContact?.pubkey,
         );
-        onSuccess?.();
-      },
-      onError: async (error: PublishNostrError | Error) => {
-        if ("event" in error) {
-          const message = await convertEvent<
-            Kind.EncryptedDirectMessage | Kind.ChannelMessage
-          >(error.event, publicKey!!, privateKey!!)!!;
-
-          MessagesQueryUtil.updateMessageStatusInQuery(
-            queryClient,
-            message,
-            2,
-            activeUsername,
-            currentChannel?.id ?? currentContact?.pubkey,
-          );
-        }
-      },
+      }
     },
-  );
+  });
 }

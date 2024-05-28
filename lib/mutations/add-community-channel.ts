@@ -24,59 +24,65 @@ export function useAddCommunityChannel(channel?: Channel) {
     () => {},
   );
 
-  return useMutation(["chats/add-community-channel"], async () => {
-    console.debug("[ns-query] Attempting to add channel to list", channel);
-    const hasChannelAlready = channels?.some(({ id }) => id === channel?.id);
-    if (!hasChannelAlready && channel && activeUserNostrProfiles) {
-      const activeUserNostrProfile = activeUserNostrProfiles[0];
+  return useMutation({
+    mutationKey: ["chats/add-community-channel"],
+    mutationFn: async () => {
+      console.debug("[ns-query] Attempting to add channel to list", channel);
+      const hasChannelAlready = channels?.some(({ id }) => id === channel?.id);
+      if (!hasChannelAlready && channel && activeUserNostrProfiles) {
+        const activeUserNostrProfile = activeUserNostrProfiles[0];
 
-      const lastSeenRecords = activeUserNostrProfile.channelsLastSeenDate ?? {};
-      const lastSeenTags = Object.entries(lastSeenRecords).map(
-        ([channelId, lastSeenTime]) => [
-          "lastSeenDate",
-          channelId,
-          lastSeenTime.getTime().toString(),
-        ],
-      );
-
-      await updateProfile({
-        tags: [["p", publicKey!!], ...lastSeenTags],
-        eventMetadata: {
-          ...activeUserNostrProfile,
-          joinedChannels: [
-            ...(activeUserNostrProfile.joinedChannels ?? []),
-            channel.id,
+        const lastSeenRecords =
+          activeUserNostrProfile.channelsLastSeenDate ?? {};
+        const lastSeenTags = Object.entries(lastSeenRecords).map(
+          ([channelId, lastSeenTime]) => [
+            "lastSeenDate",
+            channelId,
+            lastSeenTime.getTime().toString(),
           ],
-        },
-      });
-      console.debug("[ns-query] Joined channels list updated. Channel added.");
-      await queryClient.invalidateQueries([
-        ["chats/nostr-get-user-profile", publicKey],
-      ]);
-      queryClient.setQueryData(
-        [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
-        [
-          ...(queryClient.getQueryData<Channel[]>([
-            ChatQueries.ORIGINAL_JOINED_CHANNELS,
-            activeUsername,
-          ]) ?? []),
-          channel,
-        ],
-      );
-      queryClient.setQueryData(
-        [ChatQueries.JOINED_CHANNELS, activeUsername],
-        [
-          ...(
-            queryClient.getQueryData<Channel[]>([
-              ChatQueries.JOINED_CHANNELS,
+        );
+
+        await updateProfile({
+          tags: [["p", publicKey!!], ...lastSeenTags],
+          eventMetadata: {
+            ...activeUserNostrProfile,
+            joinedChannels: [
+              ...(activeUserNostrProfile.joinedChannels ?? []),
+              channel.id,
+            ],
+          },
+        });
+        console.debug(
+          "[ns-query] Joined channels list updated. Channel added.",
+        );
+        await queryClient.invalidateQueries({
+          queryKey: ["chats/nostr-get-user-profile", publicKey],
+        });
+        queryClient.setQueryData(
+          [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
+          [
+            ...(queryClient.getQueryData<Channel[]>([
+              ChatQueries.ORIGINAL_JOINED_CHANNELS,
               activeUsername,
-            ]) ?? []
-          )
-            // Since We ecency-vision able to add channels to query manually then We have to keep them unique
-            .filter((ch) => ch.id !== channel.id),
-          channel,
-        ],
-      );
-    }
+            ]) ?? []),
+            channel,
+          ],
+        );
+        queryClient.setQueryData(
+          [ChatQueries.JOINED_CHANNELS, activeUsername],
+          [
+            ...(
+              queryClient.getQueryData<Channel[]>([
+                ChatQueries.JOINED_CHANNELS,
+                activeUsername,
+              ]) ?? []
+            )
+              // Since We ecency-vision able to add channels to query manually then We have to keep them unique
+              .filter((ch) => ch.id !== channel.id),
+            channel,
+          ],
+        );
+      }
+    },
   });
 }

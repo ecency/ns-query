@@ -16,9 +16,9 @@ export function useAddDirectContact() {
     () => {},
   );
 
-  return useMutation(
-    ["chats/add-direct-contact"],
-    async (contact: DirectContact) => {
+  return useMutation({
+    mutationKey: ["chats/add-direct-contact"],
+    mutationFn: async (contact: DirectContact) => {
       console.debug("[ns-query] Attempting adding direct contact", contact);
       const directContacts =
         queryClient.getQueryData<DirectContact[]>([
@@ -47,28 +47,26 @@ export function useAddDirectContact() {
       console.debug("[ns-query] Added direct contact to list", contact);
       return contact;
     },
-    {
-      onSuccess: (contact) => {
-        if (contact) {
-          queryClient.setQueryData<DirectContact[]>(
-            [ChatQueries.DIRECT_CONTACTS, activeUsername],
-            (directContacts) => {
-              const notExists = directContacts?.every(
-                (dc) => dc.pubkey !== contact.pubkey,
-              );
-              if (notExists) {
-                return [...(directContacts ?? []), contact];
-              }
-              return directContacts;
-            },
-          );
+    onSuccess: (contact) => {
+      if (contact) {
+        queryClient.setQueryData<DirectContact[]>(
+          [ChatQueries.DIRECT_CONTACTS, activeUsername],
+          (directContacts) => {
+            const notExists = directContacts?.every(
+              (dc) => dc.pubkey !== contact.pubkey,
+            );
+            if (notExists) {
+              return [...(directContacts ?? []), contact];
+            }
+            return directContacts;
+          },
+        );
 
-          queryClient.setQueryData<DirectContact[]>(
-            [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
-            (data) => [...(data ?? []), contact],
-          );
-        }
-      },
+        queryClient.setQueryData<DirectContact[]>(
+          [ChatQueries.ORIGINAL_DIRECT_CONTACTS, activeUsername],
+          (data) => [...(data ?? []), contact],
+        );
+      }
     },
-  );
+  });
 }

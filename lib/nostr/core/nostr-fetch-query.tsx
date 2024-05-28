@@ -10,14 +10,15 @@ export function useNostrFetchQuery<DATA>(
   key: QueryKey,
   kindsOrFilters: (Kind | Filter)[],
   dataResolver: (events: Event[]) => DATA | Promise<DATA>,
-  queryOptions?: UseQueryOptions<DATA>,
+  queryOptions?: Omit<UseQueryOptions<DATA>, "queryKey" | "queryFn">,
 ) {
   const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
-  return useQuery(
-    key,
-    async () => {
+  return useQuery({
+    ...queryOptions,
+    queryKey: key,
+    queryFn: async () => {
       const kinds = kindsOrFilters.every((item) => typeof item === "number")
         ? (kindsOrFilters as Kind[])
         : [];
@@ -35,6 +36,5 @@ export function useNostrFetchQuery<DATA>(
       );
       return dataResolver(events);
     },
-    queryOptions,
-  );
+  });
 }

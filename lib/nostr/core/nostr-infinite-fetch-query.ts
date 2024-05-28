@@ -1,7 +1,8 @@
 import {
+  DefinedInitialDataInfiniteOptions,
+  InfiniteData,
   QueryKey,
   useInfiniteQuery,
-  UseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 import { Event, Filter } from "nostr-tools";
 import { listenWhileFinish } from "../utils";
@@ -13,15 +14,25 @@ export function useNostrInfiniteFetchQuery<DATA>(
   key: QueryKey,
   filters: Filter[],
   dataResolver: (events: Event[]) => DATA | Promise<DATA>,
-  queryOptions?: UseInfiniteQueryOptions<DATA>,
+  queryOptions: Omit<
+    DefinedInitialDataInfiniteOptions<
+      DATA,
+      Error,
+      InfiniteData<DATA>,
+      QueryKey,
+      number | undefined
+    >,
+    "queryKey" | "queryFn"
+  >,
 ) {
   const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
   // page param is since timestamp
-  return useInfiniteQuery(
-    key,
-    async ({ pageParam }) => {
+  return useInfiniteQuery({
+    ...queryOptions,
+    queryKey: key,
+    queryFn: async ({ pageParam }) => {
       const events = await listenWhileFinish(
         pool,
         readRelays,
@@ -34,6 +45,5 @@ export function useNostrInfiniteFetchQuery<DATA>(
       );
       return dataResolver(events);
     },
-    queryOptions,
-  );
+  });
 }

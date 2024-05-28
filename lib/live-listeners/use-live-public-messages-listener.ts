@@ -52,11 +52,11 @@ export function useLivePublicMessagesListener() {
             ),
           ),
       );
-      await queryClient.invalidateQueries([
+      await queryClient.invalidateQueries({queryKey: [
         NostrQueries.PUBLIC_MESSAGES,
         activeUsername,
         channel.id,
-      ]);
+      ]});
     },
     { enabled: !!publicKey && !!privateKey },
   );

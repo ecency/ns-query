@@ -7,9 +7,9 @@ export function useGetKeysQuery() {
   const { privateApiHost, activeUsername, ecencyAccessToken } =
     useContext(ChatContext);
 
-  return useQuery(
-    ["private-api", "get-keys", activeUsername],
-    () =>
+  return useQuery({
+    queryKey: ["private-api", "get-keys", activeUsername],
+    queryFn: () =>
       axios
         .post<{ key: string; pubkey: string; iv: string }[]>(
           `${privateApiHost}/private-api/chats`,
@@ -18,9 +18,7 @@ export function useGetKeysQuery() {
           },
         )
         .then((resp) => resp.data[0]),
-    {
-      enabled: !!activeUsername,
-      refetchOnMount: false,
-    },
-  );
+    enabled: !!activeUsername,
+    refetchOnMount: false,
+  });
 }
