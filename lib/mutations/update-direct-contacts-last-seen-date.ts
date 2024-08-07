@@ -17,9 +17,9 @@ export function useUpdateDirectContactsLastSeenDate() {
     () => {},
   );
 
-  return useMutation(
-    ["chats/nostr-update-direct-contacts-last-seen-date"],
-    async ({
+  return useMutation({
+    mutationKey: ["chats/nostr-update-direct-contacts-last-seen-date"],
+    mutationFn: async ({
       contact,
       lastSeenDate,
     }: {
@@ -50,12 +50,10 @@ export function useUpdateDirectContactsLastSeenDate() {
       contact.lastSeenDate = lastSeenDate;
       return contact;
     },
-    {
-      onSuccess: (contact) => {
-        if (contact) {
-          updateContactsBasedOnResult(queryClient, activeUsername, contact);
-        }
-      },
+    onSuccess: (contact) => {
+      if (contact) {
+        updateContactsBasedOnResult(queryClient, activeUsername, contact);
+      }
     },
-  );
+  });
 }

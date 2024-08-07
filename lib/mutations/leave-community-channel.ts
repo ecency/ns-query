@@ -23,51 +23,55 @@ export function useLeaveCommunityChannel(channel?: Channel) {
     () => {},
   );
 
-  return useMutation(["chats/leave-community-channel"], async () => {
-    console.debug("[ns-query] Attempting to leave channel", channel);
-    if (channel && activeUserNostrProfiles) {
-      const activeUserNostrProfile = activeUserNostrProfiles[0];
+  return useMutation({
+    mutationKey: ["chats/leave-community-channel"],
+    mutationFn: async () => {
+      console.debug("[ns-query] Attempting to leave channel", channel);
+      if (channel && activeUserNostrProfiles) {
+        const activeUserNostrProfile = activeUserNostrProfiles[0];
 
-      const lastSeenRecords = activeUserNostrProfile.channelsLastSeenDate ?? {};
-      const lastSeenTags = Object.entries(lastSeenRecords).map(
-        ([channelId, lastSeenTime]) => [
-          "lastSeenDate",
-          channelId,
-          lastSeenTime.getTime().toString(),
-        ],
-      );
+        const lastSeenRecords =
+          activeUserNostrProfile.channelsLastSeenDate ?? {};
+        const lastSeenTags = Object.entries(lastSeenRecords).map(
+          ([channelId, lastSeenTime]) => [
+            "lastSeenDate",
+            channelId,
+            lastSeenTime.getTime().toString(),
+          ],
+        );
 
-      await updateProfile({
-        tags: [["p", publicKey!!], ...lastSeenTags],
-        eventMetadata: {
-          ...activeUserNostrProfile,
-          joinedChannels: (activeUserNostrProfile.joinedChannels ?? []).filter(
-            (c) => c !== channel.id,
-          ),
-        },
-      });
-      console.debug("[ns-query] Joined channels list updated. Channel left.");
-      await queryClient.invalidateQueries([
-        ["chats/nostr-get-user-profile", publicKey],
-      ]);
-      queryClient.setQueryData(
-        [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
-        (
-          queryClient.getQueryData<Channel[]>([
-            ChatQueries.ORIGINAL_JOINED_CHANNELS,
-            activeUsername,
-          ]) ?? []
-        ).filter((c) => c.id !== channel.id),
-      );
-      queryClient.setQueryData(
-        [ChatQueries.JOINED_CHANNELS, activeUsername],
-        (
-          queryClient.getQueryData<Channel[]>([
-            ChatQueries.JOINED_CHANNELS,
-            activeUsername,
-          ]) ?? []
-        ).filter((c) => c.id !== channel.id),
-      );
-    }
+        await updateProfile({
+          tags: [["p", publicKey!!], ...lastSeenTags],
+          eventMetadata: {
+            ...activeUserNostrProfile,
+            joinedChannels: (
+              activeUserNostrProfile.joinedChannels ?? []
+            ).filter((c) => c !== channel.id),
+          },
+        });
+        console.debug("[ns-query] Joined channels list updated. Channel left.");
+        await queryClient.invalidateQueries({
+          queryKey: ["chats/nostr-get-user-profile", publicKey],
+        });
+        queryClient.setQueryData(
+          [ChatQueries.ORIGINAL_JOINED_CHANNELS, activeUsername],
+          (
+            queryClient.getQueryData<Channel[]>([
+              ChatQueries.ORIGINAL_JOINED_CHANNELS,
+              activeUsername,
+            ]) ?? []
+          ).filter((c) => c.id !== channel.id),
+        );
+        queryClient.setQueryData(
+          [ChatQueries.JOINED_CHANNELS, activeUsername],
+          (
+            queryClient.getQueryData<Channel[]>([
+              ChatQueries.JOINED_CHANNELS,
+              activeUsername,
+            ]) ?? []
+          ).filter((c) => c.id !== channel.id),
+        );
+      }
+    },
   });
 }

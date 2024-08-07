@@ -33,9 +33,9 @@ export function useJoinChat(
   );
   const { mutateAsync: uploadKeys } = useSaveKeys();
 
-  return useMutation(
-    ["chat-join-chat"],
-    async (pin: string) => {
+  return useMutation({
+    mutationKey: ["chat-join-chat"],
+    mutationFn: async (pin: string) => {
       const keys = createNoStrAccount();
       storage?.setItem("ecency_nostr_pr_" + activeUsername, pin);
 
@@ -71,8 +71,6 @@ export function useJoinChat(
         },
       });
     },
-    {
-      onSuccess,
-    },
-  );
+    onSuccess,
+  });
 }

@@ -6,9 +6,9 @@ import axios from "axios";
 export function useGetCommunityChannelQuery(communityName?: string) {
   const { privateApiHost } = useContext(ChatContext);
 
-  return useQuery(
-    ["private-api", "get-community-channel", communityName],
-    () =>
+  return useQuery({
+    queryKey: ["private-api", "get-community-channel", communityName],
+    queryFn: () =>
       axios
         .get<{
           channel_id: string;
@@ -17,9 +17,7 @@ export function useGetCommunityChannelQuery(communityName?: string) {
           meta: any;
         }>(`${privateApiHost}/private-api/channel/${communityName}`)
         .then((resp) => resp.data),
-    {
-      enabled: !!communityName,
-      refetchOnMount: false,
-    },
-  );
+    enabled: !!communityName,
+    refetchOnMount: false,
+  });
 }

@@ -43,9 +43,9 @@ export function useSendMessage(
   );
   const { mutateAsync: addDirectContact } = useAddDirectContact();
 
-  return useMutation(
-    ["chats/send-message"],
-    async ({ forwardedFrom, message, parentMessage }: Payload) => {
+  return useMutation({
+    mutationKey: ["chats/send-message"],
+    mutationFn: async ({ forwardedFrom, message, parentMessage }: Payload) => {
       if (!message || message.includes("Uploading")) {
         throw new Error(
           "[Chat][SendMessage] – empty message or has uploading file",
@@ -80,34 +80,32 @@ export function useSendMessage(
         throw new Error("[Chat][SendMessage] – no receiver");
       }
     },
-    {
-      onSuccess: ([message, parentMessage]) => {
-        message.sent = 0;
-        message.parentMessage = parentMessage;
+    onSuccess: ([message, parentMessage]) => {
+      message.sent = 0;
+      message.parentMessage = parentMessage;
 
-        MessagesQueryUtil.pushMessageToQueryData(
+      MessagesQueryUtil.pushMessageToQueryData(
+        queryClient,
+        message,
+        activeUsername,
+        currentChannel?.id ?? currentContact?.pubkey,
+      );
+      onSuccess?.();
+    },
+    onError: async (error: PublishNostrError | Error) => {
+      if ("event" in error) {
+        const message = await convertEvent<
+          Kind.EncryptedDirectMessage | Kind.ChannelMessage
+        >(error.event, publicKey!!, privateKey!!)!!;
+
+        MessagesQueryUtil.updateMessageStatusInQuery(
           queryClient,
           message,
+          2,
           activeUsername,
           currentChannel?.id ?? currentContact?.pubkey,
         );
-        onSuccess?.();
-      },
-      onError: async (error: PublishNostrError | Error) => {
-        if ("event" in error) {
-          const message = await convertEvent<
-            Kind.EncryptedDirectMessage | Kind.ChannelMessage
-          >(error.event, publicKey!!, privateKey!!)!!;
-
-          MessagesQueryUtil.updateMessageStatusInQuery(
-            queryClient,
-            message,
-            2,
-            activeUsername,
-            currentChannel?.id ?? currentContact?.pubkey,
-          );
-        }
-      },
+      }
     },
-  );
+  });
 }

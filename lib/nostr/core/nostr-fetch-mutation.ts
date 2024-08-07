@@ -17,14 +17,14 @@ export function useNostrFetchMutation(
   const { pool, readRelays } = useContext(NostrContext);
   const { publicKey } = useKeysQuery();
 
-  return useMutation(
-    key,
-    (newFilters?: Filter[]) => {
+  return useMutation({
+    ...options,
+    mutationKey: key,
+    mutationFn: (newFilters?: Filter[]) => {
       return listenWhileFinish(pool, readRelays, [], publicKey!!, [
         ...filters,
         ...(newFilters ?? []),
       ]);
     },
-    options,
-  );
+  });
 }

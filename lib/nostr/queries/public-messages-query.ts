@@ -100,6 +100,7 @@ export function usePublicMessagesQuery(
     },
     {
       enabled: !!channel?.id,
+      initialPageParam: undefined,
       initialData: { pages: [[]], pageParams: [] },
       getNextPageParam: (lastPage) =>
         lastPage?.sort((a, b) => a.created - b.created)?.[0]?.created,

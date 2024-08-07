@@ -21,9 +21,9 @@ export function useUpdateChannelLastSeenDate() {
     () => {},
   );
 
-  return useMutation(
-    ["chats/nostr-update-channel-last-seen-date"],
-    async ({
+  return useMutation({
+    mutationKey: ["chats/nostr-update-channel-last-seen-date"],
+    mutationFn: async ({
       channel,
       lastSeenDate,
     }: {
@@ -63,27 +63,25 @@ export function useUpdateChannelLastSeenDate() {
 
       return lastSeenRecords;
     },
-    {
-      onSuccess: (lastSeenRecords) => {
-        if (!lastSeenRecords) {
-          return;
-        }
-        queryClient.setQueryData<Profile[] | undefined>(
-          ["chats/nostr-get-user-profile", publicKey],
-          (data) => {
-            if (!data) {
-              return data;
-            }
+    onSuccess: (lastSeenRecords) => {
+      if (!lastSeenRecords) {
+        return;
+      }
+      queryClient.setQueryData<Profile[] | undefined>(
+        ["chats/nostr-get-user-profile", publicKey],
+        (data) => {
+          if (!data) {
+            return data;
+          }
 
-            return [
-              {
-                ...data[0],
-                channelsLastSeenDate: lastSeenRecords,
-              },
-            ];
-          },
-        );
-      },
+          return [
+            {
+              ...data[0],
+              channelsLastSeenDate: lastSeenRecords,
+            },
+          ];
+        },
+      );
     },
-  );
+  });
 }

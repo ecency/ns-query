@@ -18,9 +18,9 @@ export function useUpdateCommunityChannel(channel?: Channel) {
   );
   const { mutateAsync: findHealthyRelay } = useFindHealthyRelayQuery();
 
-  return useMutation(
-    ["chats/update-community-channel", channel?.communityName],
-    async (newUpdatedChannel: Channel) => {
+  return useMutation({
+    mutationKey: ["chats/update-community-channel", channel?.communityName],
+    mutationFn: async (newUpdatedChannel: Channel) => {
       if (!channel) {
         return;
       }
@@ -34,23 +34,21 @@ export function useUpdateCommunityChannel(channel?: Channel) {
 
       return newUpdatedChannel;
     },
-    {
-      onSuccess: (updatedChannel) => {
-        if (!updatedChannel) {
-          return;
-        }
+    onSuccess: (updatedChannel) => {
+      if (!updatedChannel) {
+        return;
+      }
 
-        const tempChannels = [...(channels ?? [])];
-        const index = tempChannels.findIndex(
-          (ch) => ch.id === updatedChannel?.id,
-        );
-        tempChannels[index] = updatedChannel;
+      const tempChannels = [...(channels ?? [])];
+      const index = tempChannels.findIndex(
+        (ch) => ch.id === updatedChannel?.id,
+      );
+      tempChannels[index] = updatedChannel;
 
-        queryClient.setQueryData(
-          [ChatQueries.JOINED_CHANNELS, activeUsername],
-          tempChannels,
-        );
-      },
+      queryClient.setQueryData(
+        [ChatQueries.JOINED_CHANNELS, activeUsername],
+        tempChannels,
+      );
     },
-  );
+  });
 }

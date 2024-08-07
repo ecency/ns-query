@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EncryptionTools } from "../utils";
-import { useNostrPublishMutation } from "../nostr";
-import { NostrQueries } from "../nostr/queries";
+import { NostrQueries, useNostrPublishMutation } from "../nostr";
 import { useContext } from "react";
 import { Kind } from "nostr-tools";
 import { UploadKeys } from "../types";
@@ -21,25 +20,25 @@ export function useImportChatByKeys(
   const { activeUsername, storage } = useContext(ChatContext);
 
   const { mutateAsync: uploadChatKeys } = useSaveKeys();
-  const { mutateAsync: uploadKeys } = useMutation(
-    ["chats/upload-public-key"],
-    async (keys: Parameters<UploadKeys>[1]) =>
+  const { mutateAsync: uploadKeys } = useMutation({
+    mutationKey: ["chats/upload-public-key"],
+    mutationFn: async (keys: Parameters<UploadKeys>[1]) =>
       uploadChatKeys({
         pubkey: keys.pub,
         iv: keys.iv.toString("base64"),
         key: keys.priv,
         meta: meta ?? {},
       }),
-  );
+  });
   const { mutateAsync: updateProfile } = useNostrPublishMutation(
     ["chats/update-nostr-profile"],
     Kind.Metadata,
     () => {},
   );
 
-  return useMutation(
-    ["chats/import-chat-by-key"],
-    async ({ ecencyChatKey, pin }: Payload) => {
+  return useMutation({
+    mutationKey: ["chats/import-chat-by-key"],
+    mutationFn: async ({ ecencyChatKey, pin }: Payload) => {
       if (!activeUsername) {
         return;
       }
@@ -98,8 +97,6 @@ export function useImportChatByKeys(
         },
       });
     },
-    {
-      onSuccess,
-    },
-  );
+    onSuccess,
+  });
 }

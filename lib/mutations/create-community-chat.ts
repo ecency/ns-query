@@ -22,9 +22,9 @@ export function useCreateCommunityChat(community: KindOfCommunity) {
   );
   const { mutateAsync: addToEcency } = useAddChannelToEcency();
 
-  return useMutation(
-    ["chats/create-community-chat"],
-    async () => {
+  return useMutation({
+    mutationKey: ["chats/create-community-chat"],
+    mutationFn: async () => {
       console.debug(
         "[ns-query] Attempting to create a channel for",
         community.name,
@@ -50,19 +50,17 @@ export function useCreateCommunityChat(community: KindOfCommunity) {
 
       return [convertEvent<Kind.ChannelCreation>(data), ecencyChannel] as const;
     },
-    {
-      onSuccess: async ([channel, ecencyChannel]) => {
-        if (channel) {
-          queryClient.setQueryData(
-            [ChatQueries.COMMUNITY_CHANNEL, channel.communityName],
-            channel,
-          );
-          queryClient.setQueryData(
-            ["private-api", "get-community-channel", channel.communityName],
-            ecencyChannel,
-          );
-        }
-      },
+    onSuccess: async ([channel, ecencyChannel]) => {
+      if (channel) {
+        queryClient.setQueryData(
+          [ChatQueries.COMMUNITY_CHANNEL, channel.communityName],
+          channel,
+        );
+        queryClient.setQueryData(
+          ["private-api", "get-community-channel", channel.communityName],
+          ecencyChannel,
+        );
+      }
     },
-  );
+  });
 }
