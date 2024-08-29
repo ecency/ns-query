@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 18
       - run: yarn
-      - run: yarn build
       - run: ./node_modules/.bin/install-self-peers
+      - run: yarn build
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
