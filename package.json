@@ -24,6 +24,7 @@
     "/dist"
   ],
   "devDependencies": {
+    "@team-griffin/install-self-peers": "^1.1.1",
     "@types/node": "^12.6.6",
     "@types/react": "^16.8.23",
     "@vitejs/plugin-react": "^4.2.0",
