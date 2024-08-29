@@ -1,7 +1,7 @@
 {
   "name": "@ecency/ns-query",
   "description": "React-query based Nostr protocol SDK for Ecency vision and mobile",
-  "version": "1.2.7-next",
+  "version": "1.2.9-next",
   "repository": "https://github.com/ecency/ns-query",
   "author": "ildar.timerbaev <dkildar@gmail.com>",
   "license": "MIT",
@@ -9,8 +9,14 @@
   "module": "dist/index.esm.js",
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.esm.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
   "types": "dist/index.d.ts",
@@ -31,16 +37,12 @@
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.15.0",
-    "axios": "1.6.0",
+    "axios": "1.6.2",
     "date-fns": "^2.30.0",
     "react": "^18.3.1"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.15.0",
-    "axios": "1.6.0",
-    "date-fns": "^2.30.0",
-    "nostr-tools": "^1.17.0",
-    "react": "^18.3.1"
+    "nostr-tools": "^1.17.0"
   },
   "scripts": {
     "build": "rimraf dist & tsc & vite build",
