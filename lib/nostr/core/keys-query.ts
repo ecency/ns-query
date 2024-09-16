@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
-import { EncryptionTools, useMount } from "../../utils";
+import { EncryptionTools } from "../../utils";
 import { useContext, useMemo } from "react";
 import { NostrQueries } from "../queries";
 import { ChatContext } from "../../chat-context-provider";
@@ -8,12 +8,6 @@ import { useGetKeysQuery } from "../../api";
 export function useKeysQuery() {
   const { activeUsername, activeUserData, storage } = useContext(ChatContext);
   const getKeysQuery = useGetKeysQuery();
-
-  useMount(() => {
-    if (!getKeysQuery.isFetched) {
-      getKeysQuery.refetch();
-    }
-  });
 
   const [{ data: publicKey }, { data: privateKey }, { data: iv }] = useQueries({
     queries: [

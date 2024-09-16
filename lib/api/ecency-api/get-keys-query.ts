@@ -4,11 +4,10 @@ import { useContext } from "react";
 import { ChatContext } from "../../chat-context-provider";
 
 export function useGetKeysQuery() {
-  const { privateApiHost, activeUsername, ecencyAccessToken } =
-    useContext(ChatContext);
+  const { privateApiHost, ecencyAccessToken } = useContext(ChatContext);
 
   return useQuery({
-    queryKey: ["private-api", "get-keys", activeUsername],
+    queryKey: ["private-api", "get-keys", ecencyAccessToken],
     queryFn: () =>
       axios
         .post<{ key: string; pubkey: string; iv: string }[]>(
@@ -18,7 +17,8 @@ export function useGetKeysQuery() {
           },
         )
         .then((resp) => resp.data[0]),
-    enabled: !!activeUsername,
-    refetchOnMount: false,
+    enabled: !!ecencyAccessToken,
+    refetchOnMount: true,
+    staleTime: Infinity,
   });
 }

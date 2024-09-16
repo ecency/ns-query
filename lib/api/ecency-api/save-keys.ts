@@ -4,8 +4,7 @@ import { ChatContext } from "../../chat-context-provider";
 import axios from "axios";
 
 export function useSaveKeys() {
-  const { privateApiHost, activeUsername, ecencyAccessToken } =
-    useContext(ChatContext);
+  const { privateApiHost, ecencyAccessToken } = useContext(ChatContext);
 
   return useMutation({
     mutationKey: ["private-api", "save-keys"],
