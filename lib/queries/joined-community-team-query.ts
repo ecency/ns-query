@@ -7,7 +7,9 @@ export enum ROLES {
   MOD = "mod",
 }
 
-export function useJoinedCommunityTeamQuery(community?: KindOfCommunity) {
+export function useJoinedCommunityTeamQuery(
+  community?: KindOfCommunity,
+): ReturnType<typeof useGetSetOfPublicKeysQuery> {
   return useGetSetOfPublicKeysQuery(
     community?.team
       .filter(([_, role]) =>
