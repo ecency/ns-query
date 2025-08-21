@@ -1,7 +1,7 @@
 {
   "name": "@ecency/ns-query",
   "description": "React-query based Nostr protocol SDK for Ecency vision and mobile",
-  "version": "1.2.11-next",
+  "version": "1.2.12-next",
   "repository": "https://github.com/ecency/ns-query",
   "author": "ildar.timerbaev <dkildar@gmail.com>",
   "license": "MIT",
@@ -39,7 +39,7 @@
   "peerDependencies": {
     "@tanstack/react-query": "^5.15.0",
     "axios": "1.6.2",
-    "date-fns": "^2.30.0",
+    "dayjs": "^1.11.10",
     "react": "^18.3.1"
   },
   "dependencies": {

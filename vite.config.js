@@ -21,7 +21,7 @@ export default defineConfig({
         "react",
         "react/jsx-runtime",
         "@tanstack/react-query",
-        "date-fns",
+        "dayjs",
         "crypto",
       ],
     },

@@ -3,7 +3,7 @@ import { DirectContact, useKeysQuery, useNostrFetchQuery } from "../nostr";
 import { Event, Kind } from "nostr-tools";
 import { useContext } from "react";
 import { ChatContext } from "../chat-context-provider";
-import { isAfter } from "date-fns";
+import dayjs from "dayjs";
 
 function convertEventToDirectContacts(
   events: Event[],
@@ -95,7 +95,7 @@ export function useDirectContactsQuery() {
             if (
               a.lastSeenDate instanceof Date &&
               b.lastSeenDate instanceof Date &&
-              isAfter(a.lastSeenDate, b.lastSeenDate)
+              dayjs(a.lastSeenDate).isAfter(dayjs(b.lastSeenDate))
             ) {
               return -1;
             }

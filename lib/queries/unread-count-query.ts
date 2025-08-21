@@ -6,7 +6,7 @@ import {
 } from "../nostr";
 import { useMessagesQuery } from "./messages-query";
 import { useMemo } from "react";
-import { isAfter } from "date-fns";
+import dayjs from "dayjs";
 
 export function useUnreadCountQuery(
   contact?: DirectContact,
@@ -20,7 +20,7 @@ export function useUnreadCountQuery(
   const computeUnread = (lastSeenDate: Date) => {
     const firstMessageAfterLastSeenDate = messages.findIndex(
       (m) =>
-        isAfter(new Date(m.created * 1000), lastSeenDate) &&
+        dayjs(m.created * 1000).isAfter(dayjs(lastSeenDate)) &&
         m.creator !== publicKey,
     );
     if (firstMessageAfterLastSeenDate > -1) {
